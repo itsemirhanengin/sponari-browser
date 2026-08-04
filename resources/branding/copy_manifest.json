@@ -1,0 +1,4 @@
+{
+  "_comment": "Binary assets that cannot travel as patches. source is relative to this repo, dest is relative to the Chromium src/ checkout. Applied by scripts/apply_patches.py after the patch set.",
+  "copies": []
+}

@@ -1,0 +1,24 @@
+diff --git a/chrome/app/theme/chromium/BRANDING b/chrome/app/theme/chromium/BRANDING
+index f8363d5b294fe210ebfdd18374e95b54d6ff5c17..fad49b87e8c86c0cd0466575b5bf2439453bb3fa 100644
+--- a/chrome/app/theme/chromium/BRANDING
++++ b/chrome/app/theme/chromium/BRANDING
+@@ -1,10 +1,10 @@
+-COMPANY_FULLNAME=The Chromium Authors
+-COMPANY_SHORTNAME=The Chromium Authors
+-PRODUCT_FULLNAME=Chromium
+-PRODUCT_SHORTNAME=Chromium
+-PRODUCT_INSTALLER_FULLNAME=Chromium Installer
+-PRODUCT_INSTALLER_SHORTNAME=Chromium Installer
+-COPYRIGHT=Copyright @LASTCHANGE_YEAR@ The Chromium Authors. All rights reserved.
+-MAC_BUNDLE_ID=org.chromium.Chromium
+-MAC_CREATOR_CODE=Cr24
++COMPANY_FULLNAME=The Sponari Browser Authors
++COMPANY_SHORTNAME=Sponari
++PRODUCT_FULLNAME=Sponari Browser
++PRODUCT_SHORTNAME=Sponari
++PRODUCT_INSTALLER_FULLNAME=Sponari Browser Installer
++PRODUCT_INSTALLER_SHORTNAME=Sponari Installer
++COPYRIGHT=Copyright @LASTCHANGE_YEAR@ The Sponari Browser Authors. All rights reserved.
++MAC_BUNDLE_ID=co.sponari.Browser
++MAC_CREATOR_CODE=Spnr
+ MAC_TEAM_ID=

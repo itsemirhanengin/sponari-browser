@@ -1,0 +1,14 @@
+# Sponari dev build, macOS arm64. Component build + no symbols keeps
+# incremental rebuilds fast; not meant for release performance.
+is_debug = false
+is_component_build = true
+is_official_build = false
+symbol_level = 0
+blink_symbol_level = 0
+v8_symbol_level = 0
+dcheck_always_on = false
+target_cpu = "arm64"
+proprietary_codecs = false
+ffmpeg_branding = "Chromium"
+treat_warnings_as_errors = false
+use_remoteexec = false

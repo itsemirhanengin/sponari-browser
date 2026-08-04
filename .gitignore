@@ -1,0 +1,7 @@
+__pycache__/
+.chromium_dir
+*.pyc
+.upgrade/
+*.rej
+*.orig
+.DS_Store
