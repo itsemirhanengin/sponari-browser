@@ -1,0 +1,17 @@
+diff --git a/sandbox/mac/seatbelt.cc b/sandbox/mac/seatbelt.cc
+index e9321ba5fc0f1b24b2d990ecb27c8aaa1c8b970b..0ecb609e920cfd819e9ecd7a1ae6ddfcea060b1e 100644
+--- a/sandbox/mac/seatbelt.cc
++++ b/sandbox/mac/seatbelt.cc
+@@ -139,12 +139,6 @@ Seatbelt::Parameters::~Parameters() {
+   }
+ }
+ 
+-// Initialize the static member variables.
+-#pragma clang diagnostic push
+-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+-const char* Seatbelt::kProfilePureComputation = kSBXProfilePureComputation;
+-#pragma clang diagnostic pop
+-
+ // static
+ bool Seatbelt::Init(const char* profile, uint64_t flags, std::string* error) {
+ // OS X deprecated these functions, but did not provide a suitable replacement,

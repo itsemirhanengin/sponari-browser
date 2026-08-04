@@ -1,0 +1,13 @@
+diff --git a/sandbox/mac/seatbelt.h b/sandbox/mac/seatbelt.h
+index 75dc79877465b68fc1f8e9f4b02ae99fb2c92966..76ab5cded497fff0f9ad52399e4adeb9b613558d 100644
+--- a/sandbox/mac/seatbelt.h
++++ b/sandbox/mac/seatbelt.h
+@@ -84,8 +84,6 @@ class SEATBELT_EXPORT Seatbelt {
+   // Returns whether or not the process is currently sandboxed.
+   static bool IsSandboxed();
+ 
+-  static const char* kProfilePureComputation;
+-
+   Seatbelt(const Seatbelt& other) = delete;
+   Seatbelt& operator=(const Seatbelt& other) = delete;
+ 
