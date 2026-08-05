@@ -1,0 +1,12 @@
+diff --git a/third_party/lit/v3_0/BUILD.gn b/third_party/lit/v3_0/BUILD.gn
+index e58a9be1616fd327285904b12eed6bab77528135..fcc154bb1f574d31e8a89bb50c27a06d8a5789da 100644
+--- a/third_party/lit/v3_0/BUILD.gn
++++ b/third_party/lit/v3_0/BUILD.gn
+@@ -107,6 +107,7 @@ ts_library("build_ts") {
+     "//chrome/browser/resources/signin/profile_picker:build_ts",
+     "//chrome/browser/resources/signin/signout_confirmation:build_ts",
+     "//chrome/browser/resources/skills:build_ts",
++    "//chrome/browser/resources/sponari_settings:build_ts",
+     "//chrome/browser/resources/subresource_filter:build_ts",
+     "//chrome/browser/resources/suggest_internals:build_ts",
+     "//chrome/browser/resources/support_tool:build_ts",
