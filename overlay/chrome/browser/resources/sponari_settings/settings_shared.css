@@ -58,24 +58,28 @@
   border-top: 1px solid var(--color-sys-divider);
 }
 
-/* Rows that navigate somewhere rather than holding a control. */
-.row.link-row {
-  background: none;
-  border-inline: none;
+/* Rows that navigate somewhere rather than holding a control. Used for the
+ * deep links into chrome://settings — everything this page does not cover
+ * itself stays one click away rather than becoming unreachable. */
+a.row.link-row {
   color: inherit;
   cursor: pointer;
-  font: inherit;
-  text-align: start;
-  width: 100%;
+  text-decoration: none;
 }
 
-.row.link-row:hover {
+a.row.link-row:hover {
   background: var(--color-sys-state-hover-on-subtle);
 }
 
-.row.link-row:focus-visible {
+a.row.link-row:focus-visible {
   outline: 2px solid var(--color-sys-state-focus-ring);
   outline-offset: -2px;
+}
+
+.chevron {
+  color: var(--color-sys-on-surface-subtle);
+  font-size: 20px;
+  line-height: 1;
 }
 
 .row-text {

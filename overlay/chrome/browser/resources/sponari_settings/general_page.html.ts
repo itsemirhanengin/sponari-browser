@@ -42,6 +42,26 @@ export function getHtml(this: SponariGeneralPageElement) {
         </div>
         <div class="row-control"></div>
       </div>
+      <a class="row link-row" href="chrome://settings/searchEngines">
+        <div class="row-text">
+          <div class="row-label">Manage search engines</div>
+        </div>
+        <div class="row-control"><span class="chevron">›</span></div>
+      </a>
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="card">
+      <a class="row link-row" href="chrome://settings">
+        <div class="row-text">
+          <div class="row-label">Advanced settings</div>
+          <div class="row-sublabel">
+            Everything Sponari Settings does not cover yet
+          </div>
+        </div>
+        <div class="row-control"><span class="chevron">›</span></div>
+      </a>
     </div>
   </section>
 </div>

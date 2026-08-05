@@ -20,6 +20,13 @@ export function getHtml(this: SponariAboutPageElement) {
           <div class="row-sublabel"></div>
         </div>
       </div>
+      <a class="row link-row" href="chrome://settings/help">
+        <div class="row-text">
+          <div class="row-label">About Chromium</div>
+          <div class="row-sublabel">The upstream version this build is based on</div>
+        </div>
+        <div class="row-control"><span class="chevron">›</span></div>
+      </a>
     </div>
   </section>
 

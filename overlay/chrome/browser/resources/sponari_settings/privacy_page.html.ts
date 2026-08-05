@@ -41,13 +41,36 @@ export function getHtml(this: SponariPrivacyPageElement) {
   <section class="group">
     <h3 class="group-title">Data</h3>
     <div class="card">
-      <div class="row">
+      <a class="row link-row" href="chrome://settings/clearBrowserData">
         <div class="row-text">
           <div class="row-label">Clear browsing data</div>
           <div class="row-sublabel">History, cookies, cache and more</div>
         </div>
-        <div class="row-control"></div>
-      </div>
+        <div class="row-control"><span class="chevron">›</span></div>
+      </a>
+      <a class="row link-row" href="chrome://settings/content">
+        <div class="row-text">
+          <div class="row-label">Site settings</div>
+          <div class="row-sublabel">
+            Permissions sites can ask for, per site
+          </div>
+        </div>
+        <div class="row-control"><span class="chevron">›</span></div>
+      </a>
+    </div>
+  </section>
+
+  <section class="group">
+    <div class="card">
+      <a class="row link-row" href="chrome://settings/privacy">
+        <div class="row-text">
+          <div class="row-label">Advanced privacy settings</div>
+          <div class="row-sublabel">
+            Safe Browsing, HTTPS-First mode, and more
+          </div>
+        </div>
+        <div class="row-control"><span class="chevron">›</span></div>
+      </a>
     </div>
   </section>
 </div>

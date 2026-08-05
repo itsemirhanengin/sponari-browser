@@ -1,0 +1,19 @@
+diff --git a/chrome/browser/ui/chrome_pages.cc b/chrome/browser/ui/chrome_pages.cc
+index a97f162b788aab74640e5e453ab58e29791d7565..c50136a314773abbe041db58f58175bc1280d9e7 100644
+--- a/chrome/browser/ui/chrome_pages.cc
++++ b/chrome/browser/ui/chrome_pages.cc
+@@ -458,7 +458,13 @@ bool IsTrustedPopupWindowWithScheme(const BrowserWindowInterface* browser,
+ }
+ 
+ void ShowSettings(BrowserWindowInterface* browser) {
+-  ShowSettingsSubPage(browser, std::string());
++  // Sponari: the generic "open Settings" intent (Cmd+, the app menu, the
++  // actions framework) lands on Sponari Settings. Deep links keep calling
++  // ShowSettingsSubPage() below and stay on chrome://settings.
++  base::RecordAction(UserMetricsAction("ShowOptions"));
++  FocusWebContents(browser);
++  ShowSingletonTabIgnorePathOverwriteNTP(browser,
++                                         GURL(kChromeUISponariSettingsURL));
+ }
+ 
+ void ShowSettingsSubPage(BrowserWindowInterface* browser,
