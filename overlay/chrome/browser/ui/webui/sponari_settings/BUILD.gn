@@ -1,0 +1,17 @@
+# Copyright 2026 The Sponari Browser Authors
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(!is_android)
+
+source_set("sponari_settings") {
+  public = [ "sponari_settings_ui.h" ]
+  sources = [ "sponari_settings_ui.cc" ]
+  deps = [
+    "//chrome/browser/profiles:profile",
+    "//chrome/browser/resources/sponari_settings:resources",
+    "//chrome/common",
+    "//content/public/browser",
+    "//ui/webui",
+  ]
+}

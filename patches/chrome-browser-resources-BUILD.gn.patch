@@ -1,0 +1,12 @@
+diff --git a/chrome/browser/resources/BUILD.gn b/chrome/browser/resources/BUILD.gn
+index 11c3e254f558bdb5dfc725c16ad97f1a19fb4144..349c32dfeeb8e90d5fc8b4409f6e343e25378075 100644
+--- a/chrome/browser/resources/BUILD.gn
++++ b/chrome/browser/resources/BUILD.gn
+@@ -91,6 +91,7 @@ group("resources") {
+       "side_panel/shared:resources",
+       "side_panel/tabs_from_other_devices:resources",
+       "signin:resources",
++      "sponari_settings:resources",
+       "suggest_internals:resources",
+       "support_tool:resources",
+       "tab_group_home:resources",

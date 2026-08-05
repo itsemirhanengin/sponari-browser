@@ -1,0 +1,14 @@
+diff --git a/chrome/common/webui_url_constants.h b/chrome/common/webui_url_constants.h
+index 497865b22520bbe16bd6cc68b73ba90e25f70065..76c1cc192dccefc4aa0a42a2740af2e907968dc7 100644
+--- a/chrome/common/webui_url_constants.h
++++ b/chrome/common/webui_url_constants.h
+@@ -329,6 +329,9 @@ inline constexpr char kChromeUISkillsYourSkillsPath[] = "yourSkills";
+ inline constexpr char kChromeUISkillsBrowsePath[] = "browse";
+ inline constexpr char kChromeUISplitViewNewTabPageURL[] =
+     "chrome://tab-search.top-chrome/split_new_tab_page.html";
++inline constexpr char kChromeUISponariSettingsHost[] = "sponari-settings";
++inline constexpr char kChromeUISponariSettingsURL[] =
++    "chrome://sponari-settings/";
+ inline constexpr char kChromeUISubresourceFilterInternalsHost[] =
+     "subresource-filter-internals";
+ inline constexpr char kChromeUISuggestInternalsHost[] = "suggest-internals";

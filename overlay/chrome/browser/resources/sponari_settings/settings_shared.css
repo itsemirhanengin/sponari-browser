@@ -1,0 +1,112 @@
+/* Copyright 2026 The Sponari Browser Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* #css_wrapper_metadata_start
+ * #type=style-lit
+ * #scheme=relative
+ * #css_wrapper_metadata_end */
+
+/* The page shell every section shares: a centred column of titled groups,
+ * each group a card of rows. Section components import this alongside their
+ * own stylesheet. */
+
+:host {
+  display: block;
+}
+
+.page {
+  margin: 0 auto;
+  max-width: 680px;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 0 0 28px;
+}
+
+.group {
+  margin-bottom: 28px;
+}
+
+.group-title {
+  color: var(--color-sys-on-surface-subtle);
+  font-size: 13px;
+  font-weight: 500;
+  margin: 0 0 8px;
+  padding-inline-start: 4px;
+}
+
+.card {
+  background: var(--color-sys-base-container);
+  border: 1px solid var(--color-sys-divider);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.row {
+  align-items: center;
+  display: flex;
+  gap: 16px;
+  min-height: 56px;
+  padding: 10px 16px;
+}
+
+.row + .row {
+  border-top: 1px solid var(--color-sys-divider);
+}
+
+/* Rows that navigate somewhere rather than holding a control. */
+.row.link-row {
+  background: none;
+  border-inline: none;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+  width: 100%;
+}
+
+.row.link-row:hover {
+  background: var(--color-sys-state-hover-on-subtle);
+}
+
+.row.link-row:focus-visible {
+  outline: 2px solid var(--color-sys-state-focus-ring);
+  outline-offset: -2px;
+}
+
+.row-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-label {
+  font-size: 14px;
+}
+
+.row-sublabel {
+  color: var(--color-sys-on-surface-subtle);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.row-control {
+  align-items: center;
+  display: flex;
+  flex-shrink: 0;
+  gap: 8px;
+}
+
+.footnote {
+  color: var(--color-sys-on-surface-subtle);
+  font-size: 12px;
+  line-height: 1.6;
+  margin-top: 24px;
+}
+
+.footnote a {
+  color: var(--color-sys-primary);
+}

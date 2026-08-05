@@ -1,0 +1,84 @@
+/* Copyright 2026 The Sponari Browser Authors
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file.
+ */
+
+/* #css_wrapper_metadata_start
+ * #type=style-lit
+ * #scheme=relative
+ * #css_wrapper_metadata_end */
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+#layout {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  height: 100%;
+}
+
+#sidebar {
+  background: var(--color-sys-base-container);
+  border-inline-end: 1px solid var(--color-sys-divider);
+  overflow-y: auto;
+  padding: 16px 12px;
+}
+
+#brand {
+  color: var(--color-sys-on-surface-subtle);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin: 4px 0 12px;
+  padding-inline-start: 12px;
+  text-transform: uppercase;
+}
+
+#sidebar ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-item {
+  align-items: center;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--color-sys-on-surface);
+  cursor: pointer;
+  display: flex;
+  font: inherit;
+  gap: 12px;
+  padding: 8px 12px;
+  text-align: start;
+  width: 100%;
+}
+
+.nav-item:hover {
+  background: var(--color-sys-state-hover-on-subtle);
+}
+
+.nav-item:focus-visible {
+  outline: 2px solid var(--color-sys-state-focus-ring);
+  outline-offset: -2px;
+}
+
+.nav-item[data-selected] {
+  background: var(--color-sys-base-tonal-container);
+  color: var(--color-sys-on-base-tonal-container);
+  font-weight: 500;
+}
+
+.nav-item cr-icon {
+  --iron-icon-height: 18px;
+  --iron-icon-width: 18px;
+  flex-shrink: 0;
+}
+
+#content {
+  overflow-y: auto;
+  padding: 32px 24px 64px;
+}

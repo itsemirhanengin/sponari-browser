@@ -1,0 +1,20 @@
+diff --git a/chrome/browser/ui/webui/chrome_web_ui_configs.cc b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
+index 184305a45acc2929bf70db1898fb8ddbf42b0316..7678423f9508f6be5137c7fd1d9c17531ec61f55 100644
+--- a/chrome/browser/ui/webui/chrome_web_ui_configs.cc
++++ b/chrome/browser/ui/webui/chrome_web_ui_configs.cc
+@@ -131,6 +131,7 @@
+ #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list_ui.h"
+ #include "chrome/browser/ui/webui/side_panel/tabs_from_other_devices/tabs_from_other_devices_side_panel_ui.h"
+ #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
++#include "chrome/browser/ui/webui/sponari_settings/sponari_settings_ui.h"
+ #include "chrome/browser/ui/webui/suggest_internals/suggest_internals_ui.h"
+ #include "chrome/browser/ui/webui/support_tool/support_tool_ui.h"
+ #include "chrome/browser/ui/webui/system/system_info_ui.h"
+@@ -385,6 +386,7 @@ void RegisterChromeWebUIConfigs() {
+   map.AddWebUIConfig(std::make_unique<SearchEngineChoiceUIConfig>());
+   map.AddWebUIConfig(std::make_unique<settings::SettingsUIConfig>());
+   map.AddWebUIConfig(std::make_unique<ShoppingInsightsSidePanelUIConfig>());
++  map.AddWebUIConfig(std::make_unique<SponariSettingsUIConfig>());
+   map.AddWebUIConfig(std::make_unique<SuggestInternalsUIConfig>());
+   map.AddWebUIConfig(std::make_unique<SupportToolUIConfig>());
+   map.AddWebUIConfig(std::make_unique<SyncConfirmationUIConfig>());

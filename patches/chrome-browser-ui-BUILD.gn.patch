@@ -1,0 +1,12 @@
+diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
+index 017a8c3ff755f6e4142567d04740f682c2800b2b..417ca19f84b285a28d1111a08d14bc6da9bfa38c 100644
+--- a/chrome/browser/ui/BUILD.gn
++++ b/chrome/browser/ui/BUILD.gn
+@@ -2007,6 +2007,7 @@ static_library("ui") {
+       "//chrome/browser/ui/webui/side_panel/history_clusters",
+       "//chrome/browser/ui/webui/side_panel/read_anything",
+       "//chrome/browser/ui/webui/side_panel/tabs_from_other_devices",
++      "//chrome/browser/ui/webui/sponari_settings",
+       "//chrome/browser/ui/webui/suggest_internals",
+       "//chrome/browser/ui/webui/util",
+       "//chrome/browser/ui/webui/webnn_internals",

@@ -1,0 +1,19 @@
+diff --git a/tools/gritsettings/resource_ids.spec b/tools/gritsettings/resource_ids.spec
+index e1f3030f0c0cc1b870cbe75395539d37ca1451dd..32bf7afcf2eecf723d5ea516b7693beebf68c368 100644
+--- a/tools/gritsettings/resource_ids.spec
++++ b/tools/gritsettings/resource_ids.spec
+@@ -1802,6 +1802,14 @@
+     "includes": [10140],
+   },
+ 
++  # Sponari's own WebUI. Parked here rather than in the chrome/ WebUI block
++  # above on purpose: upstream adds pages to that range every release, so an
++  # entry there would conflict on nearly every rebase.
++  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/sponari_settings/resources.grd": {
++    "META": {"sizes": {"includes": [40]}},
++    "includes": [10160],
++  },
++
+   "<(SHARED_INTERMEDIATE_DIR)/THIS_IS_A_PLACEHOLDER.grd": {
+     "META": {"sizes": {"includes": [800]}},
+     "includes": [12000],

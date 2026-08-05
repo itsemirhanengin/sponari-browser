@@ -1,0 +1,12 @@
+diff --git a/chrome/chrome_paks.gni b/chrome/chrome_paks.gni
+index 2bd694fc07dfd4fb28080cad18d48fc24a0e8c81..e35b92343e13ad789c01a7a587210dbb5394ff72 100644
+--- a/chrome/chrome_paks.gni
++++ b/chrome/chrome_paks.gni
+@@ -257,6 +257,7 @@ template("chrome_extra_paks") {
+         "$root_gen_dir/chrome/side_panel_shared_resources.pak",
+         "$root_gen_dir/chrome/side_panel_tabs_from_other_devices_resources.pak",
+         "$root_gen_dir/chrome/signin_resources.pak",
++        "$root_gen_dir/chrome/sponari_settings_resources.pak",
+         "$root_gen_dir/chrome/suggest_internals_resources.pak",
+         "$root_gen_dir/chrome/support_tool_resources.pak",
+         "$root_gen_dir/chrome/tab_group_home_resources.pak",
