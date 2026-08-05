@@ -1,0 +1,19 @@
+diff --git a/chrome/browser/themes/theme_service.cc b/chrome/browser/themes/theme_service.cc
+index bf9cb4c809b32995f3774af9c243dc4f5347c802..79df43f3368011776a534f9bd3fd924d2a12dc00 100644
+--- a/chrome/browser/themes/theme_service.cc
++++ b/chrome/browser/themes/theme_service.cc
+@@ -307,7 +307,13 @@ void ThemeService::RegisterProfilePrefs(
+   registry->RegisterBooleanPref(
+       prefs::kDeprecatedGrayscaleThemeEnabledDoNotUse, false,
+       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+-  registry->RegisterBooleanPref(prefs::kGrayscaleThemeEnabled, false);
++  // Sponari: neutral by default. With no user colour the ref palette falls back
++  // to AddBaselinePalette(), whose primary ramp is hard-coded Google Blue —
++  // that is where the strongly blue frame, tab strip and NTP tints come from.
++  // Grayscale layers AddGrayscaleSysColorOverrides() over that same baseline,
++  // which is the path incognito windows already use. Users can still pick a
++  // colour in settings; this only changes what they start with.
++  registry->RegisterBooleanPref(prefs::kGrayscaleThemeEnabled, true);
+   registry->RegisterBooleanPref(prefs::kBrowserFollowsSystemThemeColors,
+                                 BUILDFLAG(IS_CHROMEOS));
+   registry->RegisterBooleanPref(prefs::kSyncingThemePrefsMigratedToNonSyncing,

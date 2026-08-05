@@ -1,20 +1,22 @@
 diff --git a/chrome/browser/ui/color/omnibox_color_mixer.cc b/chrome/browser/ui/color/omnibox_color_mixer.cc
-index 3a4e4aae8bb14e074b14e1f7f100cf8f476825fd..29dac05eb170431c09b35df95befb6c04d9d7481 100644
+index 3a4e4aae8bb14e074b14e1f7f100cf8f476825fd..bb5e338212ca0704eac0349ec4593ba42d45c7f3 100644
 --- a/chrome/browser/ui/color/omnibox_color_mixer.cc
 +++ b/chrome/browser/ui/color/omnibox_color_mixer.cc
-@@ -66,7 +66,14 @@ void ApplyCR2023OmniboxIconColors(ui::ColorMixer& mixer,
+@@ -66,7 +66,16 @@ void ApplyCR2023OmniboxIconColors(ui::ColorMixer& mixer,
                                    const ui::ColorProviderKey& key) {
    mixer[kColorOmniboxActionIcon] = {ui::kColorSysOnSurfaceSubtle};
    mixer[kColorOmniboxActionIconHover] = {ui::kColorSysStateHoverOnSubtle};
 -  mixer[kColorOmniboxIconBackground] = {ui::kColorSysBaseContainerElevated};
 +  // Sponari: the omnibox has no pill of its own, so a raised chip behind the
 +  // page info icon reads as a stray blob on the toolbar rather than as an
-+  // affordance. Matching the toolbar makes it invisible while staying opaque,
-+  // which keeps subpixel AA on the chip's label — the same thing the
-+  // CWS-theme branch further down already does. The tonal variant is left
-+  // alone: it signals live state (active permissions), and the dangerous
-+  // security chip has its own colour.
-+  mixer[kColorOmniboxIconBackground] = {kColorToolbar};
++  // affordance. Fully transparent rather than matching kColorToolbar, because
++  // the toolbar is itself translucent under Glass Frame — an opaque toolbar
++  // -coloured fill would show up as a solid patch on the glass. (macOS has not
++  // used subpixel AA since Mojave, so losing the opaque backdrop costs the
++  // chip's label nothing here.) The tonal variant is left alone: it signals
++  // live state such as active permissions, and the dangerous-security chip has
++  // its own colour.
++  mixer[kColorOmniboxIconBackground] = {SK_ColorTRANSPARENT};
    mixer[kColorOmniboxIconBackgroundTonal] = {ui::kColorSysTonalContainer};
    mixer[kColorOmniboxIconForeground] = {ui::kColorSysOnSurface};
    mixer[kColorOmniboxIconForegroundTonal] = {ui::kColorSysOnTonalContainer};
