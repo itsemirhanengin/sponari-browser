@@ -70,6 +70,55 @@ When designing a feature, prefer the highest layer that can host it. WebUI
 `chrome/browser` C++ in minutes, widely-included headers under `base/` or
 `content/` in hours.
 
+## Top chrome: the dials, and the traps
+
+The translucent top chrome is one design system spread across several upstream
+files. Nothing in any single diff says so, which is why it is written down here.
+
+Tuning dials, all single numbers:
+
+| What | Where | Now |
+|---|---|---|
+| Glass tint strength | `browser_native_widget_mac.mm` → `kGlassTintAlpha` | `0.3` |
+| Toolbar translucency | `toolbar_view.cc` → `kToolbarGlassOpacity` | `0.5` |
+| Frame paint over glass | `chrome_color_provider_utils.h` → `kBrowserFrameAlpha*` | `0` |
+| Silhouette shadow | `browser_frame_view_mac.mm` → `PaintTopChromeShadow` | `0x4E` / `0x2B` |
+| Chrome↔content hairline | `material_chrome_color_mixer.cc` → `kColorToolbarContentAreaSeparator` | `onSurface @ 0x12` |
+
+Change one and the others usually need re-checking: they stack, so three
+"subtle" layers can add up to unreadable toolbar icons over a busy wallpaper.
+
+Traps found the hard way. Each is also commented at its site; this is the index:
+
+- **The shadow must be one path.** Two shadows (one per view) compound where
+  their blurs overlap, and that darker seam is exactly what stops the tab and
+  the toolbar reading as one sheet. `GetTopChromeSilhouette()` unions the
+  toolbar rect with the active tab's real path via `SkPathOps::Op` — union via
+  `SkPathBuilder::addPath` would depend on both shapes being wound the same way.
+- **`SkPath` is immutable in this Skia.** Build with `SkPathBuilder` + `detach()`,
+  transform with `makeOffset`/`makeTransform`. `addRRect`/`offset` do not exist.
+- **Shadows need the shape clipped out.** Draw with `SkClipOp::kDifference` over
+  the silhouette, then fill. Filling for real would put an opaque layer behind
+  the translucent toolbar and cancel the glass.
+- **`kLocationBarHeight` and `kLocationBarPageInfoIconVerticalPadding` are
+  coupled.** `LocationBarView::Layout` gives decorations
+  `height - 2*padding`, and the page info icon's natural height is
+  `kLocationBarIconSize + LOCATION_BAR_PAGE_INFO_ICON_PADDING` vertically = 24.
+  Upstream's 34/5 lands exactly on 24; our 30 needs 3. Break the equality and
+  the icon is squeezed and reads as off-centre.
+- **The Mac tab strip floor is 28 dip, practically 30.** Chromium never
+  repositions the traffic lights — AppKit draws them where it likes, and
+  `GetCaptionButtonBounds()` only *describes* that. The layout consumes only
+  `margins.bottom()`, so that is the single knob; below the floor the lights
+  spill into the toolbar row.
+- **Omnibox font survives down to `kLocationBarHeight == 22.`** Below that,
+  `GetAvailableTextHeight()` clamps it under 14pt.
+- **Toolbar button height does not come from `kToolbarButtonHeight`.** It is icon
+  size + `GetLayoutInsets(TOOLBAR_BUTTON)`. Change the insets to resize the row;
+  `kToolbarButtonHeight` still has to follow or pinned actions re-inflate it.
+- **`HorizontalTabStripRegionView::GetChildrenInZOrder()` is an allow-list.**
+  A child missing from it trips a `DCHECK` in `GetTooltipHandlerForPoint`.
+
 ## Where to look things up
 
 - Chromium code search: https://source.chromium.org/chromium
