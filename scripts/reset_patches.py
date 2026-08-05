@@ -23,10 +23,11 @@ def known_paths(state):
         target = patchset.target_path_of(patch_file)
         if target:
             paths.add(target)
-    for entry in patchset.load_copy_manifest():
-        paths.add(entry["dest"])
-    for dest in state.get("binaries", []):
-        paths.add(dest)
+    # The manifest is authoritative for what should be there now; the state
+    # additionally catches overlay files renamed or deleted in the repo since
+    # the last apply.
+    paths.update(patchset.overlay_plan())
+    paths.update(patchset.copied_paths(state))
     return sorted(paths)
 
 
@@ -63,8 +64,17 @@ def main():
             common.die("tag %s not present in checkout — run scripts/sync.py" % pin)
         common.git(["reset", "--hard", "refs/tags/%s" % pin], cwd=src, capture=False)
 
+    overlay_dirs = patchset.overlay_roots(src, paths)
     for path in paths:
         restore_path(src, path)
+        patchset.prune_empty_dirs(src, (src / path).parent)
+
+    # Drop the managed ignore block *before* the status check below, otherwise
+    # a failed overlay cleanup would stay invisible.
+    patchset.ensure_git_exclude(src, overlay_paths=None)
+    leftovers = [d for d in overlay_dirs if (src / d).exists()]
+    if leftovers:
+        common.warn("overlay dir(s) not fully removed: %s" % ", ".join(leftovers))
 
     patchset.clear_state(src)
     dirty = common.git(["status", "--porcelain"], cwd=src).stdout.strip()

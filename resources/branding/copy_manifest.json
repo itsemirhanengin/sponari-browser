@@ -1,4 +1,11 @@
 {
-  "_comment": "Binary assets that cannot travel as patches. source is relative to this repo, dest is relative to the Chromium src/ checkout. Applied by scripts/apply_patches.py after the patch set.",
-  "copies": []
+  "_comment": "Files delivered into the Chromium checkout by copying rather than patching. Sources are relative to this repo, dests relative to src/. Applied by scripts/apply_patches.py after the patch set, removed by scripts/reset_patches.py. Use 'copies' for one-off binary assets (icons), 'trees' for whole new source directories that mirror the src/ layout.",
+  "copies": [],
+  "trees": [
+    {
+      "source": "overlay",
+      "dest": ".",
+      "exclude": ["**/*.md"]
+    }
+  ]
 }

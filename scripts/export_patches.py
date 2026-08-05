@@ -66,6 +66,17 @@ def main():
 
     text_paths, binary_paths, renames = modified_files(src, args.only)
 
+    # Overlay files are delivered by copy_manifest.json and must stay untracked
+    # in src. If one got `git add`ed it would travel twice — and a later
+    # --prune could then delete the patch while the file is no longer visible
+    # to `git diff HEAD`.
+    stowaways = sorted(set(patchset.overlay_plan()).intersection(text_paths))
+    if stowaways:
+        common.die("overlay file(s) are tracked in src and must not also travel "
+                   "as patches:\n  %s\n"
+                   "  Run `git -C <src> rm --cached <path>` and edit them under "
+                   "overlay/ instead." % "\n  ".join(stowaways))
+
     common.PATCHES_DIR.mkdir(parents=True, exist_ok=True)
     written = []
     for path in text_paths:

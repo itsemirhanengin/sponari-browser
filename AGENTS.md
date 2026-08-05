@@ -39,9 +39,20 @@ Making a change:
 
     git add patches/ && git commit
 
-New files need `git add` inside `src` before export. Binaries go through
-`resources/branding/` + `copy_manifest.json`, never patches. Renames aren't
+Patches are only for files that already exist upstream. Renames aren't
 supported — express them as delete + add.
+
+Whole **new** files live in `overlay/`, which mirrors the `src/` layout and is
+copied in by `apply_patches.py` (declared in `copy_manifest.json`'s `trees`).
+They stay untracked inside `src`, so `git -C <src> diff` is still exactly the
+patch set. Edit under `overlay/`, never in `src` — apply refuses to clobber a
+hand-edited copy. Inner loop:
+
+    vim overlay/chrome/browser/ui/webui/sponari_settings/…
+    python3 scripts/apply_patches.py --copies-only
+
+Binaries that *replace* an upstream asset go through `resources/branding/` +
+`copy_manifest.json`'s `copies`, never patches. Details in `docs/PATCHES.md`.
 
 ## Writing code
 
