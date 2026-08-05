@@ -1,0 +1,28 @@
+diff --git a/chrome/browser/ui/views/frame/browser_frame_view_mac.h b/chrome/browser/ui/views/frame/browser_frame_view_mac.h
+index e7789651b6cea9c6b8bd445a4dddbfd27d0c0c20..6df00ad754c450951acfde4971b0ac5accf80af0 100644
+--- a/chrome/browser/ui/views/frame/browser_frame_view_mac.h
++++ b/chrome/browser/ui/views/frame/browser_frame_view_mac.h
+@@ -15,6 +15,7 @@
+ #include "chrome/browser/web_applications/web_app_registrar.h"
+ #include "chrome/browser/web_applications/web_app_registrar_observer.h"
+ #include "components/prefs/pref_member.h"
++#include "third_party/skia/include/core/SkPath.h"
+ #include "ui/gfx/geometry/rect_f.h"
+ 
+ namespace base {
+@@ -87,6 +88,15 @@ class BrowserFrameViewMac : public BrowserFrameView,
+   FRIEND_TEST_ALL_PREFIXES(BrowserFrameViewMacTest,
+                            GetCaptionButtonPlaceholderBounds);
+ 
++  // Sponari: the union of the toolbar and the active tab, in device pixels and
++  // this view's coordinate space. Empty when there is nothing to draw.
++  SkPath GetTopChromeSilhouette(float scale);
++
++  // Sponari: casts a single soft shadow around that silhouette, so the top
++  // chrome reads as one sheet floating on the glass. Only meaningful under
++  // Glass Frame.
++  void PaintTopChromeShadow(gfx::Canvas* canvas);
++
+   // Calculate the y offset the top UI needs to shift down due to showing the
+   // slide down menu bar at the very top in full screen.
+   int TopUIFullscreenYOffset() const;
