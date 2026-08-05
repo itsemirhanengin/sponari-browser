@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/color/material_chrome_color_mixer.cc b/chrome/browser/ui/color/material_chrome_color_mixer.cc
-index 49b26d0947e0cb36a2c75e9051cdbb4f29e4f1df..0ad4c435275cc7c2f2a8463200164c7310d6926d 100644
+index 49b26d0947e0cb36a2c75e9051cdbb4f29e4f1df..982bb477c50528a92aab76ffc1eafdf84b63e617 100644
 --- a/chrome/browser/ui/color/material_chrome_color_mixer.cc
 +++ b/chrome/browser/ui/color/material_chrome_color_mixer.cc
 @@ -487,7 +487,15 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
@@ -15,7 +15,7 @@ index 49b26d0947e0cb36a2c75e9051cdbb4f29e4f1df..0ad4c435275cc7c2f2a8463200164c73
 +  // rather than hard-coding black keeps it correct in dark mode, where it
 +  // becomes a light wash instead.
 +  mixer[kColorToolbarContentAreaSeparator] =
-+      ui::SetAlpha(ui::kColorSysOnSurface, 0x12);
++      ui::SetAlpha(ui::kColorSysOnSurface, kSponariContentSeparatorAlpha);
    mixer[kColorToolbarFeaturePromoHighlight] = {ui::kColorSysPrimary};
    mixer[kColorToolbarIconContainerBorder] = {ui::kColorSysNeutralOutline};
    mixer[kColorToolbarInkDropHover] = {ui::kColorSysStateHoverOnSubtle};

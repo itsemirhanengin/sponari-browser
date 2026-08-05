@@ -72,21 +72,30 @@ When designing a feature, prefer the highest layer that can host it. WebUI
 
 ## Top chrome: the dials, and the traps
 
-The translucent top chrome is one design system spread across several upstream
-files. Nothing in any single diff says so, which is why it is written down here.
+Every tunable number lives in **one place**:
+`chrome/browser/ui/color/chrome_color_provider_utils.h`. It already held
+`kBrowserFrameAlpha*`, so the rest joined it there rather than in a new header —
+a new one would need GN visibility from four targets (`gn check` is enforced;
+see `no_check_targets` in `.gn`) and cost more patches than it saved.
 
-Tuning dials, all single numbers:
+| Dial | Now |
+|---|---|
+| `kBrowserFrameAlphaLight` / `Dark` — frame paint over glass | `0` |
+| `kSponariGlassTintAlpha` — NSGlassEffectView tint | `0.3` |
+| `kSponariToolbarOpacity` — toolbar's own fill | `0.5` |
+| `kSponariTopChromeShadow{Contact,Ambient}{Blur,Alpha}` | `10`/`0x4E`, `3`/`0x2B` |
+| `kSponariContentSeparatorAlpha` — chrome↔content hairline | `0x12` |
 
-| What | Where | Now |
-|---|---|---|
-| Glass tint strength | `browser_native_widget_mac.mm` → `kGlassTintAlpha` | `0.3` |
-| Toolbar translucency | `toolbar_view.cc` → `kToolbarGlassOpacity` | `0.5` |
-| Frame paint over glass | `chrome_color_provider_utils.h` → `kBrowserFrameAlpha*` | `0` |
-| Silhouette shadow | `browser_frame_view_mac.mm` → `PaintTopChromeShadow` | `0x4E` / `0x2B` |
-| Chrome↔content hairline | `material_chrome_color_mixer.cc` → `kColorToolbarContentAreaSeparator` | `onSurface @ 0x12` |
+These composite over the same pixels, so change one and re-check the others:
+three individually "subtle" layers add up to unreadable toolbar icons over a
+busy wallpaper. Each consumer carries a comment pointing back at the header.
 
-Change one and the others usually need re-checking: they stack, so three
-"subtle" layers can add up to unreadable toolbar icons over a busy wallpaper.
+Do **not** try to merge the consuming patches into one file. One patch per
+upstream file is load-bearing: `patchset.target_path_of()` reads only the first
+`diff --git` header, so a multi-file patch would hide its other targets from
+state tracking and from `reset_patches.py`; and `resolve_conflicts.py` feeds the
+AI a single upstream file's `git diff old..new`, which is what makes conflicts
+tractable at all.
 
 Traps found the hard way. Each is also commented at its site; this is the index:
 

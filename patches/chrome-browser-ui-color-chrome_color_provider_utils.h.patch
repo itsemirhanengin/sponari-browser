@@ -1,0 +1,52 @@
+diff --git a/chrome/browser/ui/color/chrome_color_provider_utils.h b/chrome/browser/ui/color/chrome_color_provider_utils.h
+index 319364059b9c32c5ca4ea703c221b6e5eeb7dad4..76a00e13ddaa3cfdddc7e183b0e2a254e5eea8ae 100644
+--- a/chrome/browser/ui/color/chrome_color_provider_utils.h
++++ b/chrome/browser/ui/color/chrome_color_provider_utils.h
+@@ -14,9 +14,47 @@
+ #include "ui/gfx/color_utils.h"
+ 
+ inline constexpr SkAlpha kToolbarInkDropHighlightVisibleAlpha = 0x14;
++
++// Sponari: the translucent top chrome, in one place.
++//
++// These numbers stack on top of each other — the glass tint, the toolbar's own
++// opacity and the frame paint all composite over the same pixels — so tuning one
++// in isolation is usually wrong. They live together here rather than next to
++// their use sites for exactly that reason; see the table in AGENTS.md.
++//
++// Consumed by (each also carries a pointer back here):
++//   kBrowserFrameAlpha*        browser_frame_view_mac.mm    OnPaint
++//   kSponariGlassTintAlpha     browser_native_widget_mac.mm UpdateBackground
++//   kSponariToolbarOpacity     toolbar_view.cc              Init
++//   kSponariTopChrome*Shadow*  browser_frame_view_mac.mm    PaintTopChromeShadow
++//   kSponariContentSeparator*  material_chrome_color_mixer.cc
++
++// How much of the frame colour is painted over the glass. 0 is pure glass.
+ inline constexpr SkAlpha kBrowserFrameAlphaLight = 0;
+ inline constexpr SkAlpha kBrowserFrameAlphaDark = 0;
+ 
++// Strength of the NSGlassEffectView tint. Upstream's Glass Frame uses 0.55,
++// which lets the theme colour dominate and reads as a flat slab; lower keeps the
++// desktop visible through the window.
++inline constexpr float kSponariGlassTintAlpha = 0.3f;
++
++// Opacity of the toolbar's own fill. 0 is pure glass, 1 the stock opaque
++// toolbar. Keep enough of a wash that toolbar icons and omnibox text stay
++// legible over a busy wallpaper.
++inline constexpr float kSponariToolbarOpacity = 0.5f;
++
++// The single drop shadow cast by the tab + toolbar silhouette: a tight contact
++// layer plus a wider ambient one. Must stay one shadow over one unioned path —
++// two shadows compound where their blurs meet and the seam is visible.
++inline constexpr int kSponariTopChromeShadowContactBlur = 10;
++inline constexpr SkAlpha kSponariTopChromeShadowContactAlpha = 0x4E;
++inline constexpr int kSponariTopChromeShadowAmbientBlur = 3;
++inline constexpr SkAlpha kSponariTopChromeShadowAmbientAlpha = 0x2B;
++
++// Hairline between the top chrome and the page. Washed over kColorSysOnSurface
++// so it stays in the shadow's tonal family and inverts correctly in dark mode.
++inline constexpr SkAlpha kSponariContentSeparatorAlpha = 0x12;
++
+ // Converts ColorId if |color_id| is in CHROME_COLOR_IDS.
+ std::string ChromeColorIdName(ui::ColorId color_id);
+ 

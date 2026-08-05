@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/views/frame/browser_frame_view_mac.mm b/chrome/browser/ui/views/frame/browser_frame_view_mac.mm
-index 634d1e508b957900a737151370d64d860a43461a..90527d3985307e7ec9ff233e39de51e53969f398 100644
+index 634d1e508b957900a737151370d64d860a43461a..7564c53c1a26f313766970b5368632ca51fe9d5d 100644
 --- a/chrome/browser/ui/views/frame/browser_frame_view_mac.mm
 +++ b/chrome/browser/ui/views/frame/browser_frame_view_mac.mm
 @@ -15,6 +15,7 @@
@@ -66,7 +66,7 @@ index 634d1e508b957900a737151370d64d860a43461a..90527d3985307e7ec9ff233e39de51e5
    }
    // LINT.ThenChange(//chrome/browser/ui/views/frame/immersive_mode_controller_mac.mm:MacTabStripInsets)
  
-@@ -470,6 +491,100 @@ BrowserFrameViewMac::GetCaptionButtonBounds() const {
+@@ -470,6 +491,102 @@ BrowserFrameViewMac::GetCaptionButtonBounds() const {
  
  // views::View:
  
@@ -144,12 +144,14 @@ index 634d1e508b957900a737151370d64d860a43461a..90527d3985307e7ec9ff233e39de51e5
 +    return;
 +  }
 +
-+  // A tight contact shadow plus a wider ambient one.
++  // Tuned in chrome_color_provider_utils.h, next to the other top chrome dials.
 +  std::vector<gfx::ShadowValue> shadows;
-+  shadows.emplace_back(gfx::Vector2d(0, 1), /*blur=*/10,
-+                       SkColorSetA(SK_ColorBLACK, 0x4E));
-+  shadows.emplace_back(gfx::Vector2d(0, 0), /*blur=*/3,
-+                       SkColorSetA(SK_ColorBLACK, 0x2B));
++  shadows.emplace_back(
++      gfx::Vector2d(0, 1), kSponariTopChromeShadowContactBlur,
++      SkColorSetA(SK_ColorBLACK, kSponariTopChromeShadowContactAlpha));
++  shadows.emplace_back(
++      gfx::Vector2d(0, 0), kSponariTopChromeShadowAmbientBlur,
++      SkColorSetA(SK_ColorBLACK, kSponariTopChromeShadowAmbientAlpha));
 +
 +  // Clip the sheet away so only the shadow it casts survives. Without this the
 +  // opaque fill would sit behind the translucent toolbar and cancel the glass.
@@ -167,7 +169,7 @@ index 634d1e508b957900a737151370d64d860a43461a..90527d3985307e7ec9ff233e39de51e5
  void BrowserFrameViewMac::OnPaint(gfx::Canvas* canvas) {
    if (!GetBrowserView()->GetIsNormalType() &&
        !GetBrowserView()->GetIsWebAppType()) {
-@@ -482,6 +597,7 @@ void BrowserFrameViewMac::OnPaint(gfx::Canvas* canvas) {
+@@ -482,6 +599,7 @@ void BrowserFrameViewMac::OnPaint(gfx::Canvas* canvas) {
                                      ? kBrowserFrameAlphaDark
                                      : kBrowserFrameAlphaLight;
      canvas->DrawColor(SkColorSetA(frame_color, frame_alpha));

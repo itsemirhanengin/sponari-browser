@@ -1,8 +1,16 @@
 diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.cc b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-index 5a42610d05b88cc64b534c2e25657e542c0fc286..4041c7923e0a142bdf2f3889579f2227e0150890 100644
+index 5a42610d05b88cc64b534c2e25657e542c0fc286..f1c9e4820e87fed3670abe89515cd718c8218e9b 100644
 --- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
 +++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
-@@ -346,10 +346,29 @@ void ToolbarView::Init() {
+@@ -50,6 +50,7 @@
+ #include "chrome/browser/ui/browser_window.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
+ #include "chrome/browser/ui/color/chrome_color_id.h"
++#include "chrome/browser/ui/color/chrome_color_provider_utils.h"
+ #include "chrome/browser/ui/global_error/global_error_service.h"
+ #include "chrome/browser/ui/global_error/global_error_service_factory.h"
+ #include "chrome/browser/ui/intent_picker_tab_helper.h"
+@@ -346,10 +347,27 @@ void ToolbarView::Init() {
    }
  
    if (display_mode_ == DisplayMode::kNormal) {
@@ -13,16 +21,14 @@ index 5a42610d05b88cc64b534c2e25657e542c0fc286..4041c7923e0a142bdf2f3889579f2227
 +    // NSGlassEffectView and picks up the desktop, instead of reading as a flat
 +    // kColorToolbar slab under an otherwise glassy frame.
 +    //
-+    // Tune kToolbarGlassOpacity to taste: 0 is pure glass (the effect view's
-+    // own tint is all you get), 1 is the stock opaque toolbar. Keep enough of
-+    // a wash that toolbar icons and omnibox text stay legible over a busy
-+    // wallpaper.
-+    constexpr float kToolbarGlassOpacity = 0.5f;
++    // Tuned in chrome_color_provider_utils.h, next to the other top chrome
++    // dials — the glass tint and the frame paint composite over the same pixels,
++    // so these numbers only make sense read together.
 +    const auto primary_color =
 +        features::IsGlassFrameEnabled()
 +            ? CustomCornersBackground::ColorChoiceWithAlpha(
 +                  CustomCornersBackground::ToolbarTheme(),
-+                  kToolbarGlassOpacity)
++                  kSponariToolbarOpacity)
 +            : CustomCornersBackground::ColorChoiceWithAlpha(
 +                  CustomCornersBackground::ToolbarTheme());
      SetBackground(std::make_unique<CustomCornersBackground>(
@@ -35,7 +41,7 @@ index 5a42610d05b88cc64b534c2e25657e542c0fc286..4041c7923e0a142bdf2f3889579f2227
    } else if (display_mode_ == DisplayMode::kCustomTab) {
      custom_tab_bar_ =
          AddChildView(std::make_unique<CustomTabBarView>(browser_view_, this));
-@@ -578,13 +597,12 @@ void ToolbarView::Init() {
+@@ -578,13 +596,12 @@ void ToolbarView::Init() {
      UpdateGlicButtonVisibility();
    }
  
@@ -55,7 +61,7 @@ index 5a42610d05b88cc64b534c2e25657e542c0fc286..4041c7923e0a142bdf2f3889579f2227
  
    overflow_button_ = AddChildView(std::make_unique<OverflowButton>());
    overflow_button_->SetVisible(false);
-@@ -971,7 +989,10 @@ void ToolbarView::FinalizeHideGlicActorTaskIcon() {
+@@ -971,7 +988,10 @@ void ToolbarView::FinalizeHideGlicActorTaskIcon() {
    glic_actor_task_icon_->SetVisible(false);
    glic_actor_task_icon_->SetTaskIconToDefault();
  
@@ -67,7 +73,7 @@ index 5a42610d05b88cc64b534c2e25657e542c0fc286..4041c7923e0a142bdf2f3889579f2227
    if (glic_button_divider_) {
      insertion_index = GetIndexOf(glic_button_divider_).value();
    }
-@@ -1824,7 +1845,16 @@ AvatarToolbarButtonInterface* ToolbarView::GetAvatarToolbarButtonInterface() {
+@@ -1824,7 +1844,16 @@ AvatarToolbarButtonInterface* ToolbarView::GetAvatarToolbarButtonInterface() {
                 ? toolbar_webview_->GetAvatarToolbarButtonInterface()
                 : nullptr;
    }

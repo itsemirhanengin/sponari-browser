@@ -1,23 +1,30 @@
 diff --git a/chrome/browser/ui/views/frame/browser_native_widget_mac.mm b/chrome/browser/ui/views/frame/browser_native_widget_mac.mm
-index 46037e75841673859243a90fc0acccf5f5da8b9b..8093d28020194135725f473bcb1b1dcc4d1160dc 100644
+index 46037e75841673859243a90fc0acccf5f5da8b9b..39a2b616dcfd1c182518bacaec6ee6c9c8ca4dc7 100644
 --- a/chrome/browser/ui/views/frame/browser_native_widget_mac.mm
 +++ b/chrome/browser/ui/views/frame/browser_native_widget_mac.mm
-@@ -766,10 +766,17 @@ void BrowserNativeWidgetMac::UpdateBackground() {
+@@ -22,6 +22,7 @@
+ #include "chrome/browser/ui/browser_command_controller.h"
+ #include "chrome/browser/ui/browser_commands.h"
+ #include "chrome/browser/ui/browser_window/public/browser_window_features.h"
++#include "chrome/browser/ui/color/chrome_color_provider_utils.h"
+ #import "chrome/browser/ui/cocoa/browser_window_command_handler.h"
+ #import "chrome/browser/ui/cocoa/chrome_command_dispatcher_delegate.h"
+ #import "chrome/browser/ui/cocoa/touchbar/browser_window_touch_bar_controller.h"
+@@ -766,10 +767,13 @@ void BrowserNativeWidgetMac::UpdateBackground() {
      CGFloat g = SkColorGetG(theme_color) / 255.0;
      CGFloat b = SkColorGetB(theme_color) / 255.0;
  
-+    // Sponari: a much lighter wash than upstream's 0.55. At that strength the
-+    // theme colour dominates and the top chrome reads as a flat slab of
-+    // whatever the theme is, rather than as glass. Keeping it low lets the
-+    // desktop behind the window come through, which is the point of the effect
-+    // view. Raise it if tab labels lose contrast over busy wallpapers.
-+    constexpr CGFloat kGlassTintAlpha = 0.3;
-+
-     glass_view.tintColor = [NSColor colorWithSRGBRed:r
-                                                green:g
-                                                 blue:b
+-    glass_view.tintColor = [NSColor colorWithSRGBRed:r
+-                                               green:g
+-                                                blue:b
 -                                               alpha:0.55];
-+                                               alpha:kGlassTintAlpha];
++    // Sponari: a much lighter wash than upstream's 0.55, tuned in
++    // chrome_color_provider_utils.h next to the other top chrome dials.
++    glass_view.tintColor =
++        [NSColor colorWithSRGBRed:r
++                            green:g
++                             blue:b
++                            alpha:kSponariGlassTintAlpha];
  
      background_view_ = glass_view;
      [content_view addSubview:background_view_
