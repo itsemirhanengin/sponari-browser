@@ -1,0 +1,18 @@
+diff --git a/chrome/browser/ui/views/frame/browser_view.h b/chrome/browser/ui/views/frame/browser_view.h
+index c6bcc529f1cc1842be2285fb8b880e00cbde4309..97ff2ca057d2277d37fd97d16686ca1524e266f3 100644
+--- a/chrome/browser/ui/views/frame/browser_view.h
++++ b/chrome/browser/ui/views/frame/browser_view.h
+@@ -290,6 +290,13 @@ class BrowserView : public BrowserWindow,
+     return horizontal_tab_strip_region_view_->tab_strip();
+   }
+ 
++  // Sponari: the avatar button lives at the trailing edge of the horizontal
++  // tab strip rather than in the toolbar, so ToolbarView needs to reach it.
++  // Null until BrowserView finishes constructing its children.
++  HorizontalTabStripRegionView* horizontal_tab_strip_region_view() {
++    return horizontal_tab_strip_region_view_;
++  }
++
+   // Accessor for the Toolbar.
+   const ToolbarView* toolbar() const { return toolbar_; }
+   ToolbarView* toolbar() { return toolbar_; }

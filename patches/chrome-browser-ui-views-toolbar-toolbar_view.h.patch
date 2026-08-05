@@ -1,0 +1,14 @@
+diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.h b/chrome/browser/ui/views/toolbar/toolbar_view.h
+index c2d82dc622ea6025e90ae7eefa8b8bc893fe122e..a2c34dd0bcfaac23769707db660922cfa3350098 100644
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.h
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.h
+@@ -187,7 +187,8 @@ class ToolbarView : public views::AccessiblePaneView,
+ 
+   // TODO(crbug.com/513238408): Remove this once toolbar layout/overflow is
+   // fixed.
+-  AvatarToolbarButton* avatar_toolbar_button() { return avatar_; }
++  // Sponari: forwards to the tab strip region, which owns the button now.
++  AvatarToolbarButton* avatar_toolbar_button();
+   AppMenuIconController* app_menu_icon_controller() {
+     return &app_menu_icon_controller_;
+   }

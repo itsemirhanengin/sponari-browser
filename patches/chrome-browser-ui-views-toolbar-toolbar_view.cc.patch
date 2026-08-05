@@ -1,0 +1,54 @@
+diff --git a/chrome/browser/ui/views/toolbar/toolbar_view.cc b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+index 5a42610d05b88cc64b534c2e25657e542c0fc286..7a7588c210cc60d35e72569890135c640b239d0b 100644
+--- a/chrome/browser/ui/views/toolbar/toolbar_view.cc
++++ b/chrome/browser/ui/views/toolbar/toolbar_view.cc
+@@ -578,13 +578,12 @@ void ToolbarView::Init() {
+     UpdateGlicButtonVisibility();
+   }
+ 
+-  if (!features::IsWebUIAvatarButtonEnabled()) {
+-    avatar_ =
+-        AddChildView(std::make_unique<AvatarToolbarButton>(browser_view_));
+-    bool show_avatar_toolbar_button =
+-        AvatarToolbarButtonInterface::CanShowForProfile(browser_->profile());
+-    avatar_->SetVisible(show_avatar_toolbar_button);
+-  }
++  // Sponari: the avatar button is created by HorizontalTabStripRegionView and
++  // lives at the trailing edge of the tab strip row instead. `avatar_` stays
++  // null and the accessors below forward to the tab strip's copy, so every
++  // ToolbarButtonProvider caller keeps working unchanged. ToolbarController
++  // then simply never finds it in the toolbar's view tree, which is what keeps
++  // it out of the overflow menu.
+ 
+   overflow_button_ = AddChildView(std::make_unique<OverflowButton>());
+   overflow_button_->SetVisible(false);
+@@ -971,7 +970,10 @@ void ToolbarView::FinalizeHideGlicActorTaskIcon() {
+   glic_actor_task_icon_->SetVisible(false);
+   glic_actor_task_icon_->SetTaskIconToDefault();
+ 
+-  size_t insertion_index = GetIndexOf(avatar_.get()).value();
++  // Sponari: `avatar_` used to be the anchor here, but the avatar now lives in
++  // the tab strip region. `overflow_button_` is the child that immediately
++  // followed it, so it is the equivalent insertion point.
++  size_t insertion_index = GetIndexOf(overflow_button_.get()).value();
+   if (glic_button_divider_) {
+     insertion_index = GetIndexOf(glic_button_divider_).value();
+   }
+@@ -1824,7 +1826,16 @@ AvatarToolbarButtonInterface* ToolbarView::GetAvatarToolbarButtonInterface() {
+                ? toolbar_webview_->GetAvatarToolbarButtonInterface()
+                : nullptr;
+   }
+-  return avatar_;
++  return avatar_toolbar_button();
++}
++
++AvatarToolbarButton* ToolbarView::avatar_toolbar_button() {
++  // Sponari: the button lives in the tab strip region. Falls back to `avatar_`
++  // (always null today) so this stays correct if the toolbar ever owns one
++  // again — e.g. if vertical tabs hide the horizontal region view.
++  auto* const region = browser_view_->horizontal_tab_strip_region_view();
++  return region && region->avatar_button() ? region->avatar_button()
++                                           : avatar_.get();
+ }
+ 
+ ToolbarButton* ToolbarView::GetBackButton() {

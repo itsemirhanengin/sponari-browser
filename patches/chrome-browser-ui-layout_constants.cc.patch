@@ -1,0 +1,109 @@
+diff --git a/chrome/browser/ui/layout_constants.cc b/chrome/browser/ui/layout_constants.cc
+index d89ceaf9e4b0c30047e30a2d7bae3e8ffaf80bb3..13e15b4f28424b9f94c37bf87174241107665f14 100644
+--- a/chrome/browser/ui/layout_constants.cc
++++ b/chrome/browser/ui/layout_constants.cc
+@@ -62,7 +62,13 @@ int GetLayoutConstant(LayoutConstant constant) {
+     case LayoutConstant::kLocationBarElementPadding:
+       return touch_ui ? 3 : 2;
+     case LayoutConstant::kLocationBarPageInfoIconVerticalPadding:
+-      return touch_ui ? 3 : 5;
++      // LocationBarView::Layout gives its decorations
++      // kLocationBarHeight - 2 * this, and the page info icon's natural height
++      // is kLocationBarIconSize + LOCATION_BAR_PAGE_INFO_ICON_PADDING
++      // vertically = 16 + 8 = 24. Upstream's 34 - 2*5 lands exactly on 24;
++      // Sponari's 30 needs 3 to keep that equality, otherwise the icon is
++      // squeezed into 20 and reads as small and off-centre.
++      return 3;
+     case LayoutConstant::kLocationBarPageInfoIconLabelExtraTrailingPadding:
+       return 4;
+     case LayoutConstant::kLocationBarPageInfoIconDangerousLeadingPadding:
+@@ -74,7 +80,9 @@ int GetLayoutConstant(LayoutConstant constant) {
+     case LayoutConstant::kLocationBarTrailingDecorationInnerPadding:
+       return touch_ui ? 3 : 8;
+     case LayoutConstant::kLocationBarHeight:
+-      return touch_ui ? 36 : 34;
++      // Sponari: 30 for a shorter toolbar. GetAvailableTextHeight() derives
++      // from this and clamps the omnibox font; 14pt survives down to 22.
++      return touch_ui ? 36 : 30;
+     // LINT.IfChange(LocationBarIconSize)
+     case LayoutConstant::kLocationBarIconSize:
+       return touch_ui ? 20 : 16;
+@@ -100,12 +108,15 @@ int GetLayoutConstant(LayoutConstant constant) {
+     case LayoutConstant::kTabCloseButtonSize:
+       return touch_ui ? 24 : (features::IsRoundedIconsEnabled() ? 14 : 16);
+     case LayoutConstant::kTabHeight:
+-      return 34 + GetLayoutConstant(LayoutConstant::kTabstripToolbarOverlap);
++      // Sponari: 28 (+overlap) so kTabStripHeight lands on 33, matching the
++      // trimmed macOS traffic-light exclusion. Floor is 29 — below that
++      // HorizontalTabStripRegionView::UpdateButtonBorders() goes negative.
++      return 28 + GetLayoutConstant(LayoutConstant::kTabstripToolbarOverlap);
+     case LayoutConstant::kTabStripHeight:
+       return GetLayoutConstant(LayoutConstant::kTabHeight) +
+              GetLayoutConstant(LayoutConstant::kTabStripPadding);
+     case LayoutConstant::kTabStripPadding:
+-      return 6;
++      return 4;
+     case LayoutConstant::kTabSeparatorHeight:
+       return touch_ui ? 24 : 20;
+     case LayoutConstant::kTabPreTitlePadding:
+@@ -115,7 +126,11 @@ int GetLayoutConstant(LayoutConstant constant) {
+     case LayoutConstant::kTabstripToolbarOverlap:
+       return 1;
+     case LayoutConstant::kToolbarButtonHeight:
+-      return touch_ui ? 48 : 34;
++      // Sponari: matches the shortened toolbar. This does not itself size the
++      // ordinary toolbar buttons (that is icon size + TOOLBAR_BUTTON insets),
++      // but pinned actions and the Glic button would otherwise re-inflate the
++      // row back to 34.
++      return touch_ui ? 48 : 30;
+     case LayoutConstant::kToolbarButtonIconSize:
+       return touch_ui ? kDefaultTouchableIconSize
+                       : kDefaultIconSizeChromeRefresh;
+@@ -139,8 +154,11 @@ int GetLayoutConstant(LayoutConstant constant) {
+       return 20;
+     case LayoutConstant::kDownloadIconSize:
+       return 20;
+-    case LayoutConstant::kMainBackgroundRegionCornerRadius:
++    // Sponari: softer corners on the toolbar panel. Split out of the shared
++    // case below so the main background region and vertical tabs keep 8.
+     case LayoutConstant::kToolbarCornerRadius:
++      return 14;
++    case LayoutConstant::kMainBackgroundRegionCornerRadius:
+     case LayoutConstant::kVerticalTabCornerRadius:
+       return 8;
+     case LayoutConstant::kVerticalTabHeight:
+@@ -203,14 +221,16 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
+       return gfx::Insets(touch_ui ? 10 : 0);
+     }
+ 
++    // Sponari: 5 rather than 7. This is what actually shortens the toolbar —
++    // a button is icon size (20) plus these insets, so 20 + 2*5 = 30.
+     case TOOLBAR_BUTTON:
+-      return gfx::Insets(touch_ui ? 12 : 7);
++      return gfx::Insets(touch_ui ? 12 : 5);
+ 
+     case BROWSER_APP_MENU_CHIP_PADDING:
+       if (touch_ui) {
+         return GetLayoutInsets(TOOLBAR_BUTTON);
+       } else {
+-        return gfx::Insets::TLBR(7, 4, 7, 6);
++        return gfx::Insets::TLBR(5, 4, 5, 6);
+       }
+ 
+     case WEB_APP_APP_MENU_CHIP_PADDING:
+@@ -223,11 +243,13 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
+       if (touch_ui) {
+         return GetLayoutInsets(TOOLBAR_BUTTON);
+       } else {
+-        return gfx::Insets::TLBR(7, 10, 7, 4);
++        return gfx::Insets::TLBR(5, 10, 5, 4);
+       }
+ 
+     case TOOLBAR_INTERIOR_MARGIN:
+-      return touch_ui ? gfx::Insets::VH(4, 0) : gfx::Insets::VH(6, 6);
++      // Sponari: 4 vertical. Toolbar height is the tallest child (30) plus
++      // this margin, so 30 + 2*4 = 38.
++      return touch_ui ? gfx::Insets::VH(4, 0) : gfx::Insets::VH(4, 6);
+ 
+     case WEBUI_TAB_STRIP_TOOLBAR_INTERIOR_MARGIN:
+       return gfx::Insets::VH(4, 0);

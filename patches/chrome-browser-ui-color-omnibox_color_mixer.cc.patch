@@ -1,0 +1,20 @@
+diff --git a/chrome/browser/ui/color/omnibox_color_mixer.cc b/chrome/browser/ui/color/omnibox_color_mixer.cc
+index 3a4e4aae8bb14e074b14e1f7f100cf8f476825fd..29dac05eb170431c09b35df95befb6c04d9d7481 100644
+--- a/chrome/browser/ui/color/omnibox_color_mixer.cc
++++ b/chrome/browser/ui/color/omnibox_color_mixer.cc
+@@ -66,7 +66,14 @@ void ApplyCR2023OmniboxIconColors(ui::ColorMixer& mixer,
+                                   const ui::ColorProviderKey& key) {
+   mixer[kColorOmniboxActionIcon] = {ui::kColorSysOnSurfaceSubtle};
+   mixer[kColorOmniboxActionIconHover] = {ui::kColorSysStateHoverOnSubtle};
+-  mixer[kColorOmniboxIconBackground] = {ui::kColorSysBaseContainerElevated};
++  // Sponari: the omnibox has no pill of its own, so a raised chip behind the
++  // page info icon reads as a stray blob on the toolbar rather than as an
++  // affordance. Matching the toolbar makes it invisible while staying opaque,
++  // which keeps subpixel AA on the chip's label — the same thing the
++  // CWS-theme branch further down already does. The tonal variant is left
++  // alone: it signals live state (active permissions), and the dangerous
++  // security chip has its own colour.
++  mixer[kColorOmniboxIconBackground] = {kColorToolbar};
+   mixer[kColorOmniboxIconBackgroundTonal] = {ui::kColorSysTonalContainer};
+   mixer[kColorOmniboxIconForeground] = {ui::kColorSysOnSurface};
+   mixer[kColorOmniboxIconForegroundTonal] = {ui::kColorSysOnTonalContainer};

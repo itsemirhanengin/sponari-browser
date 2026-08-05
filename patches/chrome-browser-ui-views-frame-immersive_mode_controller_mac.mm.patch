@@ -1,0 +1,16 @@
+diff --git a/chrome/browser/ui/views/frame/immersive_mode_controller_mac.mm b/chrome/browser/ui/views/frame/immersive_mode_controller_mac.mm
+index fdbb4cf741eb3de803fdf4b053813d8f1ad2d16e..eaa19c25fcb4be139be866b9e013c12168806abd 100644
+--- a/chrome/browser/ui/views/frame/immersive_mode_controller_mac.mm
++++ b/chrome/browser/ui/views/frame/immersive_mode_controller_mac.mm
+@@ -239,6 +239,11 @@ gfx::Insets ImmersiveModeControllerMac::GetTabStripRegionViewInsets() {
+   // values in BrowserFrameViewMac::GetCaptionButtonInsets don't
+   // account for a window with an NSToolbar. (This is now done for
+   // the Mac browser frame view, but not yet here.)
++  //
++  // Note: only *horizontal* insets are produced here, so Sponari's change to
++  // the vertical caption margins in BrowserFrameViewMac::GetCaptionButtonBounds
++  // needs no matching edit below. The traffic lights get less vertical
++  // clearance during a fullscreen reveal, though — nothing here reserves it.
+   int right_left_inset = 0;
+   if (@available(macOS 26, *)) {
+     right_left_inset = 74;

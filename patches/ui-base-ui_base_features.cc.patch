@@ -1,0 +1,15 @@
+diff --git a/ui/base/ui_base_features.cc b/ui/base/ui_base_features.cc
+index 1cee901ca32f1ac81f20679f3fca3de530c68491..377fac0ed0ceb372e1737712cf5c91d005f09715 100644
+--- a/ui/base/ui_base_features.cc
++++ b/ui/base/ui_base_features.cc
+@@ -503,7 +503,9 @@ BASE_FEATURE_PARAM(int,
+ BASE_FEATURE(kSplitViewLinkOpen, base::FEATURE_ENABLED_BY_DEFAULT);
+ 
+ BASE_FEATURE(kDesktopGlowUp, base::FEATURE_DISABLED_BY_DEFAULT);
+-BASE_FEATURE(kGlassFrame, base::FEATURE_DISABLED_BY_DEFAULT);
++// Sponari: the translucent top chrome is part of the product's look.
++// IsGlassFrameEnabled() still gates this on macOS 26+.
++BASE_FEATURE(kGlassFrame, base::FEATURE_ENABLED_BY_DEFAULT);
+ BASE_FEATURE(kRoundedIcons, base::FEATURE_DISABLED_BY_DEFAULT);
+ 
+ // Updates the default dark neutrals for the theme palette.

@@ -1,0 +1,74 @@
+diff --git a/chrome/browser/ui/views/frame/horizontal_tab_strip_region_view.cc b/chrome/browser/ui/views/frame/horizontal_tab_strip_region_view.cc
+index 7c991f9d6181ae649b1dc92d2b4466bba37ffc22..131808935ed204f49b3e6a4c41b435f732c68efb 100644
+--- a/chrome/browser/ui/views/frame/horizontal_tab_strip_region_view.cc
++++ b/chrome/browser/ui/views/frame/horizontal_tab_strip_region_view.cc
+@@ -27,7 +27,9 @@
+ #include "chrome/browser/ui/ui_features.h"
+ #include "chrome/browser/ui/views/chrome_layout_provider.h"
+ #include "chrome/browser/ui/views/frame/browser_view.h"
++#include "chrome/browser/ui/views/profiles/avatar_toolbar_button.h"
+ #include "chrome/browser/ui/views/tab_search_bubble_host.h"
++#include "chrome/browser/ui/views/toolbar/avatar_toolbar_button_interface.h"
+ #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
+ #include "chrome/browser/ui/views/tabs/dragging/tab_drag_controller.h"
+ #include "chrome/browser/ui/views/tabs/hovercard/tab_hover_card_controller.h"
+@@ -52,6 +54,7 @@
+ #include "ui/base/dragdrop/drag_drop_types.h"
+ #include "ui/base/dragdrop/mojom/drag_drop_types.mojom.h"
+ #include "ui/base/dragdrop/os_exchange_data.h"
++#include "ui/base/hit_test.h"
+ #include "ui/base/l10n/l10n_util.h"
+ #include "ui/base/metadata/metadata_header_macros.h"
+ #include "ui/base/metadata/metadata_impl_macros.h"
+@@ -72,6 +75,7 @@
+ #include "ui/views/view.h"
+ #include "ui/views/view_class_properties.h"
+ #include "ui/views/view_utils.h"
++#include "ui/views/window/hit_test_utils.h"
+ 
+ #if BUILDFLAG(IS_MAC)
+ constexpr int kTabStripRegionInternalPaddingMac = 12;
+@@ -274,6 +278,30 @@ HorizontalTabStripRegionView::HorizontalTabStripRegionView(
+     tab_strip_action_container_ =
+         AddChildView(std::move(tab_strip_action_container));
+   }
++
++  // Sponari: the profile avatar belongs at the trailing edge of the tab strip
++  // row, not in the toolbar. Added last so FlexLayout — which orders the main
++  // axis by child index — places it past `reserved_grab_handle_space_`. It
++  // deliberately gets no kFlexBehaviorKey: the default spec pins it to its
++  // preferred width, while the grab handle's unbounded flex sits at order 3 and
++  // so is only allocated whatever is left over.
++  if (browser &&
++      browser->GetType() == BrowserWindowInterface::Type::TYPE_NORMAL &&
++      !features::IsWebUIAvatarButtonEnabled()) {
++    avatar_button_ =
++        AddChildView(std::make_unique<AvatarToolbarButton>(browser_view));
++    avatar_button_->SetVisible(
++        AvatarToolbarButtonInterface::CanShowForProfile(browser->GetProfile()));
++    avatar_button_->SetProperty(views::kCrossAxisAlignmentKey,
++                                views::LayoutAlignment::kCenter);
++    avatar_button_->SetProperty(
++        views::kMarginsKey,
++        gfx::Insets::TLBR(
++            0, 0, 0, GetLayoutConstant(LayoutConstant::kTabStripPadding)));
++    // Without this the tab strip row treats the click as a window drag.
++    views::SetHitTestComponent(avatar_button_, static_cast<int>(HTCLIENT));
++  }
++
+   UpdateTabStripMargin();
+ }
+ HorizontalTabStripRegionView::~HorizontalTabStripRegionView() {
+@@ -353,6 +381,12 @@ views::View::Views HorizontalTabStripRegionView::GetChildrenInZOrder() {
+     children.emplace_back(tab_strip_action_container_.get());
+   }
+ 
++  // Sponari: must be listed — views::View::GetTooltipHandlerForPoint DCHECKs
++  // that this returns every child.
++  if (avatar_button_) {
++    children.emplace_back(avatar_button_.get());
++  }
++
+   if (reserved_grab_handle_space_) {
+     children.emplace_back(reserved_grab_handle_space_.get());
+   }

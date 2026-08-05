@@ -1,0 +1,57 @@
+diff --git a/chrome/browser/ui/views/location_bar/location_bar_view.cc b/chrome/browser/ui/views/location_bar/location_bar_view.cc
+index 0353e3f0aeec92d56e158c50bade9472be72696a..60782aa41ac788fc0f8601cf1f372124409a260b 100644
+--- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
++++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
+@@ -1536,7 +1536,14 @@ gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
+ }
+ 
+ void LocationBarView::RefreshBackground() {
+-  const double opacity = hover_animation_.GetCurrentValue();
++  // Sponari: hover never changes the omnibox background — only focus and
++  // in-progress input do, further down. Pinning the hover animation out here
++  // rather than at the call sites also keeps the location icon's own
++  // background from showing through: kColorOmniboxIconBackground resolves to
++  // kColorToolbar, which is invisible against the toolbar but reads as a pale
++  // blob once a hover pill is painted behind it.
++  const double opacity =
++      is_popup_mode_ ? hover_animation_.GetCurrentValue() : 0.0;
+   const bool is_caret_visible =
+       GetOmniboxController()->edit_model()->is_caret_visible();
+   const bool input_in_progress =
+@@ -1545,7 +1552,11 @@ void LocationBarView::RefreshBackground() {
+                              ui::NativeTheme::PreferredContrast::kMore;
+ 
+   const auto* const color_provider = GetColorProvider();
+-  SkColor normal = color_provider->GetColor(kColorLocationBarBackground);
++  // Sponari: the omnibox has no pill at all at rest — just the icon and the
++  // text sitting on the toolbar surface.
++  SkColor normal = is_popup_mode_
++                       ? color_provider->GetColor(kColorLocationBarBackground)
++                       : SK_ColorTRANSPARENT;
+   SkColor hovered =
+       color_provider->GetColor(kColorLocationBarBackgroundHovered);
+ 
+@@ -1588,14 +1599,20 @@ void LocationBarView::RefreshBackground() {
+   }
+ 
+   // Keep the views::Textfield in sync. It needs an opaque background to
+-  // correctly enable subpixel AA.
+-  omnibox_view_->SetBackgroundColor(background_color_);
++  // correctly enable subpixel AA. Sponari: while the pill is transparent the
++  // effective backdrop is the toolbar, so hand that over instead of the
++  // see-through colour, or the omnibox text drops to greyscale AA.
++  const SkColor text_backdrop_color =
++      SkColorGetA(background_color_) == SK_AlphaOPAQUE
++          ? background_color_
++          : color_provider->GetColor(kColorToolbar);
++  omnibox_view_->SetBackgroundColor(text_backdrop_color);
+ 
+   // The divider between indicators and request chips should have the same color
+   // as the omnibox.
+   if (base::FeatureList::IsEnabled(
+           content_settings::features::kLeftHandSideActivityIndicators)) {
+-    permission_dashboard_view_->SetDividerBackgroundColor(background_color_);
++    permission_dashboard_view_->SetDividerBackgroundColor(text_backdrop_color);
+   }
+ 
+   SchedulePaint();

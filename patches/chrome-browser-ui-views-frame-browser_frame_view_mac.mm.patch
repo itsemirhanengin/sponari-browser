@@ -1,0 +1,28 @@
+diff --git a/chrome/browser/ui/views/frame/browser_frame_view_mac.mm b/chrome/browser/ui/views/frame/browser_frame_view_mac.mm
+index 634d1e508b957900a737151370d64d860a43461a..237592a31289df56bcc66a8b65b6d7e119fb8cc5 100644
+--- a/chrome/browser/ui/views/frame/browser_frame_view_mac.mm
++++ b/chrome/browser/ui/views/frame/browser_frame_view_mac.mm
+@@ -448,12 +448,21 @@ BrowserFrameViewMac::GetCaptionButtonBounds() const {
+   // LINT.IfChange(MacTabStripInsets)
+   // These are empirically determined; feel free to change them if they're
+   // not precise.
++  //
++  // `bounds` describes where AppKit already draws the traffic lights —
++  // Chromium never repositions them — so it is a description, not a request.
++  // Of `margins`, GetBrowserLayoutParams() below consumes only bottom() and
++  // right()/left(), which makes the bottom margin the sole knob for tab strip
++  // height: tab strip >= bounds.bottom() + margins.bottom(). Sponari trims it
++  // for a shorter strip. Both branches land on 33 so there is no
++  // OS-version-dependent layout difference, and TLBR leaves top() alone for
++  // the web-app window-controls-overlay placeholder.
+   if (@available(macOS 26, *)) {
+     result.bounds = gfx::RectF(12, 10, 62, 18);
+-    result.margins = gfx::OutsetsF::VH(10, 12);
++    result.margins = gfx::OutsetsF::TLBR(10, 12, 5, 12);  // 28 + 5 = 33
+   } else {
+     result.bounds = gfx::RectF(20, 11, 54, 16);
+-    result.margins = gfx::OutsetsF::VH(11, 20);
++    result.margins = gfx::OutsetsF::TLBR(11, 20, 6, 20);  // 27 + 6 = 33
+   }
+   // LINT.ThenChange(//chrome/browser/ui/views/frame/immersive_mode_controller_mac.mm:MacTabStripInsets)
+ 

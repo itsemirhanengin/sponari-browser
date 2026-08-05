@@ -1,0 +1,32 @@
+diff --git a/chrome/browser/ui/views/frame/horizontal_tab_strip_region_view.h b/chrome/browser/ui/views/frame/horizontal_tab_strip_region_view.h
+index 774e58392efa7349ecbde4f4fc4bcf4a5e010ec5..1c7fbf6008ce020765cb518ec0125931450b2926 100644
+--- a/chrome/browser/ui/views/frame/horizontal_tab_strip_region_view.h
++++ b/chrome/browser/ui/views/frame/horizontal_tab_strip_region_view.h
+@@ -23,6 +23,7 @@ class ActionViewController;
+ class Button;
+ class LabelButton;
+ }
++class AvatarToolbarButton;
+ class NewTabButton;
+ class TabStripActionContainer;
+ class TabSearchButton;
+@@ -50,6 +51,11 @@ class HorizontalTabStripRegionView final : public TabStripRegionView {
+ 
+   views::Button* new_tab_button_for_testing() { return new_tab_button_; }
+ 
++  // Sponari: the profile avatar sits at the trailing edge of the tab strip row
++  // rather than in the toolbar. Null in windows that cannot show it (popups,
++  // and when the WebUI avatar button is enabled).
++  AvatarToolbarButton* avatar_button() { return avatar_button_; }
++
+   views::View* reserved_grab_handle_space_for_testing() {
+     return reserved_grab_handle_space_;
+   }
+@@ -137,6 +143,7 @@ class HorizontalTabStripRegionView final : public TabStripRegionView {
+   raw_ptr<TabStripComboButton> combo_button_ = nullptr;
+   raw_ptr<views::Button> new_tab_button_ = nullptr;
+   raw_ptr<TabStripControlButton> unfocus_button_ = nullptr;
++  raw_ptr<AvatarToolbarButton> avatar_button_ = nullptr;
+ 
+   std::unique_ptr<views::ActionViewController> action_view_controller_;
+ 
