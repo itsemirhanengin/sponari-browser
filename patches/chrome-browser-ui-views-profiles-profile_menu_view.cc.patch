@@ -1,0 +1,22 @@
+diff --git a/chrome/browser/ui/views/profiles/profile_menu_view.cc b/chrome/browser/ui/views/profiles/profile_menu_view.cc
+index d0f61863c6dae15afd857099e49c981db8b0cf28..eba3af49ed06968c387a52f98986af7a0ef9eb59 100644
+--- a/chrome/browser/ui/views/profiles/profile_menu_view.cc
++++ b/chrome/browser/ui/views/profiles/profile_menu_view.cc
+@@ -231,10 +231,13 @@ void ProfileMenuView::BuildMenu() {
+   std::vector<ProfileAttributesEntry*> available_profiles;
+   GetProfilesForOtherProfilesSection(available_profiles);
+ 
+-  if (!available_profiles.empty()) {
+-    SetProfileManagementHeading(
+-        l10n_util::GetStringUTF16(IDS_PROFILE_MENU_PROFILES_LIST_TITLE));
+-  }
++  // Sponari: the heading is unconditional. In the redesigned menu it labels
++  // the whole profile group — the current profile included, since that now
++  // renders as a list row rather than a card — so it is not "other profiles"
++  // and it should not disappear when this is the only profile. It also owns
++  // the hairline that separates the profile group from the feature rows.
++  SetProfileManagementHeading(
++      l10n_util::GetStringUTF16(IDS_PROFILE_MENU_PROFILES_LIST_TITLE));
+   BuildOtherProfilesSection(available_profiles);
+   base::UmaHistogramBoolean("ProfileChooser.HasProfilesShown",
+                             !available_profiles.empty());

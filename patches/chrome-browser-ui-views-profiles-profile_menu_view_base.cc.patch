@@ -1,0 +1,532 @@
+diff --git a/chrome/browser/ui/views/profiles/profile_menu_view_base.cc b/chrome/browser/ui/views/profiles/profile_menu_view_base.cc
+index 52bbe8bce669f0618b16cb9070749e034779715f..b99f87e710adca45dc7f7cc09dd83354fc5ee3a9 100644
+--- a/chrome/browser/ui/views/profiles/profile_menu_view_base.cc
++++ b/chrome/browser/ui/views/profiles/profile_menu_view_base.cc
+@@ -78,6 +78,7 @@
+ #include "ui/views/layout/table_layout.h"
+ #include "ui/views/metadata/view_factory.h"
+ #include "ui/views/style/typography.h"
++#include "ui/views/vector_icons.h"
+ #include "ui/views/view.h"
+ #include "ui/views/view_class_properties.h"
+ 
+@@ -89,26 +90,42 @@ namespace {
+ 
+ // Helpers --------------------------------------------------------------------
+ 
+-constexpr int kMenuWidth = 328;
++// Sponari: every dial the redesigned profile menu turns lives in this block.
++// The menu is a compact list — a section label, one row per profile, hairlines
++// between groups — rather than Chromium's 328dip panel topped by a filled
++// identity card. The numbers are chosen against each other: the rounded row
++// highlight is inset from the menu edge by `kMenuOuterPadding`, so its radius
++// has to stay well under the bubble's own `kMenuCornerRadius` or the two
++// curves fight. Change one and look at the others.
++constexpr int kMenuWidth = 288;
++constexpr int kMenuCornerRadius = 12;
++
++// Padding ring around the whole scrollable list. Rows paint their highlight
++// edge to edge, so this is what makes the highlight float inside the bubble.
++constexpr int kMenuOuterPadding = 6;
++
++// A row: `kRowHorizontalPadding` of breathing room before the icon, then
++// `kRowIconLabelSpacing` before the label. The highlight covers the padding.
++constexpr int kRowHorizontalPadding = 8;
++constexpr int kRowIconLabelSpacing = 10;
++constexpr int kRowCornerRadius = 7;
++
++// The current-profile row. Its avatar is deliberately close to the 16dip
++// avatars of the other profiles below it: same list, one is just current.
++constexpr int kIdentityRowAvatarSize = 22;
++constexpr int kIdentityRowCheckSize = 16;
++constexpr int kIdentityRowVerticalPadding = 5;
++
++// Vertical air above and below a group hairline.
++constexpr int kSeparatorVerticalMargin = 5;
++
+ constexpr int kMaxImageSize = ProfileMenuViewBase::kIdentityImageSize;
+-constexpr int kDefaultMargin = 8;
+ constexpr int kManagementHeaderIconLabelSpacing = 6;
+ 
+ // If the bubble is too large to fit on the screen, it still needs to be at
+ // least this tall to show one row.
+ constexpr int kMinimumScrollableContentHeight = 40;
+ 
+-// Spacing between the edge of the user menu and the top/bottom or left/right of
+-// the menu items.
+-constexpr int kMenuEdgeMargin = 16;
+-
+-// Empty space between the rounded rectangle (outside) and menu edge.
+-constexpr int kIdentityContainerMargin = 12;
+-
+-// Additional empty space between the menu item (e.g. icon or label) and the
+-// edge menu margin.
+-constexpr int kMenuItemLeftInternalPadding = 12;
+-
+ constexpr char kProfileMenuClickedActionableItemHistogram[] =
+     "Profile.Menu.ClickedActionableItem";
+ constexpr char kProfileMenuClickedActionableItemSupervisedHistogram[] =
+@@ -288,11 +305,19 @@ class MenuButtonRowView : public HoverButton {
+           params.secondary_view = std::move(badge_view);
+           params.add_vertical_label_spacing = false;
+           params.icon_vertical_offset = -icon_offset;
+-          params.icon_label_spacing -= icon_offset;
++          // Sponari: a fixed, tight icon-to-label gap instead of the layout
++          // provider's dialog-scale metric. `icon_offset` compensates for
++          // images that render larger than the nominal icon size (the AI
++          // subscription ring), and must keep being subtracted here.
++          params.icon_label_spacing = kRowIconLabelSpacing - icon_offset;
+           return params;
+         }()) {
+-    SetIconHorizontalMargins(kMenuItemLeftInternalPadding - icon_offset,
+-                             /*right=*/0);
++    // Sponari: the row's own left padding is the border below, so the icon
++    // needs no extra margin of its own — it sits `kRowHorizontalPadding` in
++    // from the highlight's edge.
++    SetIconHorizontalMargins(-icon_offset, /*right=*/0);
++    SetBorder(views::CreateEmptyBorder(
++        gfx::Insets::VH(0, kRowHorizontalPadding)));
+     // Instead of creating the highlight with an InkDrop, which paints a layer
+     // over this, we paint the highlight directly to the background.
+     views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::OFF);
+@@ -327,11 +352,15 @@ class MenuButtonRowView : public HoverButton {
+ 
+   void OnPaintBackground(gfx::Canvas* canvas) override {
+     if (HasFocus()) {
++      // Sponari: a rounded highlight rather than a full-bleed rectangle.
++      // `HoverButton` takes focus on hover, so this is the hover treatment
++      // too. The row is already inset from the menu edge by the padding ring
++      // in `Reset()`, which is what makes the pill read as floating.
+       cc::PaintFlags flags;
+       flags.setAntiAlias(true);
+       flags.setColor(
+           GetColorProvider()->GetColor(ui::kColorMenuItemBackgroundSelected));
+-      canvas->DrawRect(GetLocalBounds(), flags);
++      canvas->DrawRoundRect(GetLocalBounds(), kRowCornerRadius, flags);
+     }
+   }
+ };
+@@ -433,6 +462,9 @@ ProfileMenuViewBase::ProfileMenuViewBase(views::BubbleAnchor anchor_element,
+       close_bubble_helper_(this, browser->tab_strip_model()) {
+   SetButtons(static_cast<int>(ui::mojom::DialogButton::kNone));
+   set_margins(gfx::Insets(0));
++  // Sponari: a softer bubble than the dialog default, sized against the row
++  // highlight radius — see the dial block at the top of this file.
++  set_corner_radius(kMenuCornerRadius);
+   DCHECK(!anchor_element.IsNull());
+ 
+   if (ui::TrackedElement* tracked_element = anchor_element.GetIfElement();
+@@ -466,130 +498,119 @@ ProfileMenuViewBase::~ProfileMenuViewBase() = default;
+ 
+ void ProfileMenuViewBase::SetProfileIdentityWithCallToAction(
+     IdentitySectionParams params) {
+-  constexpr int kHeaderVerticalSize = 36;
+-  constexpr int kHeaderImageSize = 16;
+-  constexpr int kIdentityContainerHorizontalPadding = 24;
+-  constexpr int kAvatarTopMargin = 24;
+-  constexpr int kTitleTopMargin = 8;
+-  constexpr int kBottomMarginWhenNoButton = 24;
+-  constexpr int kSubtitleBottomMarginInfoBelow = 4;
+-  constexpr int kSubtitleBottomMarginButtonBelow = 12;
+-  constexpr int kButtonBottomMargin = 28;
+-
+-  // Vertical view structure when all elements are present. Square brackets []
+-  // represent empty space:
++  // Sponari: upstream centres a 56dip avatar, the profile name, the email and
++  // an optional call-to-action inside a filled, rounded card that owns the top
++  // third of the menu. That is a panel header, and it makes the profile you
++  // are in look like a different kind of thing from the profiles listed under
++  // it. Here the same information is one list row — avatar, name, email, and a
++  // trailing check that means "you are here" — so the current profile sits in
++  // the same rhythm as its siblings. Nothing is dropped: the management header,
++  // the error/promo subtitle and the action button all still render, they just
++  // hang off the row as full-width elements instead of inflating a card.
++  //
++  // Vertical structure, square brackets are empty space:
+   //
+-  // Optional header:
+-  //     HoverButton: (size: kHeaderVerticalSize)
+-  //     Horizontal Separator
+-  // [kAvatarTopMargin]
+-  // Image: Avatar (size: kIdentityInfoImageSize)
+-  // [kTitleTopMargin]
+-  // Label: Title
+-  // Optional:
+-  //     Label: Email Subtitle (optional)
+-  //     [kSubtitleBottomMarginInfoBelow] or [kSubtitleBottomMarginButtonBelow]
+-  //     Label: Subtitle (optional)
+-  //     [kSubtitleBottomMarginButtonBelow] or [kBottomMarginWhenNoButton]
+-  // Optional:
+-  //     Button: maybe with an image inside
+-  //     [kButtonBottomMargin]
++  //   Row: [pad] Avatar [gap] Title / Email subtitle  ->  Check [pad]
++  //   Optional: HoverButton: management header (icon + text)
++  //   Optional: Label: subtitle (sync error, passkey unlock, promo copy)
++  //   Optional: Button, full width
+   //
+   // Note: If a button is present, a subtitle must also be present. The layout
+   // does not support a button without subtitle.
++  constexpr int kHeaderImageSize = 16;
++  constexpr int kSubtitleTopMargin = 2;
++  constexpr int kButtonTopMargin = 8;
++  constexpr int kButtonBottomMargin = 4;
+ 
+   identity_info_container_->RemoveAllChildViews();
+-  // Vertical BoxLayout.
+-  auto box_layout =
++  auto* box_layout = identity_info_container_->SetLayoutManager(
+       CreateBoxLayout(views::BoxLayout::Orientation::kVertical,
+-                      views::BoxLayout::CrossAxisAlignment::kCenter);
++                      views::BoxLayout::CrossAxisAlignment::kStretch));
+   box_layout->SetCollapseMarginsSpacing(true);
+-  identity_info_container_->SetLayoutManager(std::move(box_layout));
+ 
+-  // Paint to a layer with rounded corners. This ensures that no element can
+-  // draw outside of the rounded corners, even if they use layers. This is
+-  // needed in particular for the HoverButton highlight.
+-  identity_info_container_->SetPaintToLayer();
+-  identity_info_container_->layer()->SetRoundedCornerRadius(
+-      gfx::RoundedCornersF(views::LayoutProvider::Get()->GetCornerRadiusMetric(
+-          views::Emphasis::kHigh)));
+-
+-  // No need to set rounded corners on the background, because the container
+-  // is painted in a layer that has rounded corners already.
+-  identity_info_container_->SetBackground(
+-      views::CreateSolidBackground(kColorProfileMenuIdentityInfoBackground));
+-
+-  // Space around the rectangle, between the rectangle and the menu edge.
+-  identity_info_container_->SetProperty(views::kMarginsKey,
+-                                        gfx::Insets(kIdentityContainerMargin));
++  // The identity row itself.
++  auto* row =
++      identity_info_container_->AddChildView(std::make_unique<views::View>());
++  auto* row_layout = row->SetLayoutManager(CreateBoxLayout(
++      views::BoxLayout::Orientation::kHorizontal,
++      views::BoxLayout::CrossAxisAlignment::kCenter,
++      gfx::Insets::VH(kIdentityRowVerticalPadding, kRowHorizontalPadding)));
++  row_layout->set_between_child_spacing(kRowIconLabelSpacing);
++
++  // Avatar. `profile_image_padding` is expressed by callers as a fraction of
++  // `kIdentityInfoImageSize` (the guest and incognito glyphs sit inside a
++  // ring of empty space), so it has to be rescaled to the row's avatar size
++  // rather than used as-is — at 56dip it would exceed the 22dip avatar.
++  const int avatar_padding = params.profile_image_padding *
++                             kIdentityRowAvatarSize / kIdentityInfoImageSize;
++  row->AddChildView(std::make_unique<AvatarImageView>(
++      params.profile_image, this, kIdentityRowAvatarSize - 2 * avatar_padding,
++      avatar_padding, params.has_dotted_ring));
++
++  // Name, with the email tucked under it when there is one.
++  auto* labels = row->AddChildView(std::make_unique<views::View>());
++  labels->SetLayoutManager(
++      CreateBoxLayout(views::BoxLayout::Orientation::kVertical,
++                      views::BoxLayout::CrossAxisAlignment::kStart));
++  labels->AddChildView(views::Builder<views::Label>()
++                           .SetText(params.title)
++                           .SetTextContext(views::style::CONTEXT_LABEL)
++                           .SetTextStyle(views::style::STYLE_BODY_3_MEDIUM)
++                           .SetElideBehavior(gfx::ELIDE_TAIL)
++                           .SetHorizontalAlignment(gfx::ALIGN_LEFT)
++                           .SetEnabledColor(kColorProfileMenuIdentityInfoTitle)
++                           .Build());
++  if (!params.email_subtitle.empty()) {
++    labels->AddChildView(
++        views::Builder<views::Label>()
++            .SetText(params.email_subtitle)
++            .SetTextContext(views::style::CONTEXT_LABEL)
++            .SetTextStyle(views::style::STYLE_BODY_5)
++            .SetElideBehavior(gfx::ELIDE_TAIL)
++            .SetHorizontalAlignment(gfx::ALIGN_LEFT)
++            .SetHandlesTooltips(false)
++            .SetEnabledColor(kColorProfileMenuIdentityInfoSubtitle)
++            .Build());
++  }
++  row_layout->SetFlexForView(labels, 1);
++
++  // The "you are here" check. Off-the-record menus (incognito, guest) are not
++  // one of several profiles you can switch between, so the mark would be
++  // meaningless there.
++  if (!profile().IsOffTheRecord() && !profile().IsGuestSession()) {
++    row->AddChildView(std::make_unique<views::ImageView>(
++        ui::ImageModel::FromVectorIcon(features::IsRoundedIconsEnabled()
++                                           ? views::kCheckIcon
++                                           : views::kMenuCheckOldIcon,
++                                       kColorProfileMenuIdentityInfoTitle,
++                                       kIdentityRowCheckSize)));
++  }
+ 
++  // Management header. Upstream puts this above the avatar, inside the card;
++  // with the card gone it reads better as an annotation hanging under the
++  // profile it describes.
+   if (!params.header_string.empty() && !params.header_image.IsEmpty()) {
+-    // Header.
+     auto hover_button = std::make_unique<HoverButton>(
+         std::move(params.header_action),
+         std::make_unique<views::ImageView>(
+             GetCircularSizedImage(params.header_image, kHeaderImageSize)),
+         params.header_string, std::u16string(), nullptr, true, std::u16string(),
+         kManagementHeaderIconLabelSpacing);
+-    hover_button->SetPreferredSize(gfx::Size(
+-        kMenuWidth - 2 * kIdentityContainerMargin, kHeaderVerticalSize));
+     hover_button->SetIconHorizontalMargins(0, 0);
++    hover_button->SetBorder(
++        views::CreateEmptyBorder(gfx::Insets::VH(0, kRowHorizontalPadding)));
+     hover_button->title()->SetTextStyle(views::style::STYLE_BODY_5);
+-
+-    // Swap the layout manager so that the text is centered.
+-    auto hover_button_box_layout = std::make_unique<views::BoxLayout>(
+-        views::BoxLayout::Orientation::kHorizontal);
+-    hover_button_box_layout->set_main_axis_alignment(
+-        views::LayoutAlignment::kCenter);
+-    hover_button->SetLayoutManager(std::move(hover_button_box_layout));
+     identity_info_container_->AddChildView(std::move(hover_button));
+-
+-    // Separator.
+-    identity_info_container_->AddChildView(
+-        views::Builder<views::Separator>()
+-            .SetColorId(kColorProfileMenuBackground)
+-            .SetPreferredSize(
+-                gfx::Size(kMenuWidth, views::Separator::kThickness))
+-            .Build());
+   }
+ 
+-  // Avatar.
+-  identity_info_container_->AddChildView(
+-      views::Builder<views::View>(
+-          std::make_unique<AvatarImageView>(
+-              params.profile_image, this,
+-              kIdentityInfoImageSize - 2 * params.profile_image_padding,
+-              params.profile_image_padding, params.has_dotted_ring))
+-          .SetProperty(views::kMarginsKey,
+-                       gfx::Insets().set_top(kAvatarTopMargin))
+-          .Build());
+-
+-  // Title.
+   const bool has_any_subtitle =
+       !params.subtitle.empty() || !params.email_subtitle.empty();
+   const bool has_button = !params.button_text.empty();
+-  const int title_bottom_margin =
+-      has_any_subtitle ? 0 : kBottomMarginWhenNoButton;
+-  identity_info_container_->AddChildView(
+-      views::Builder<views::Label>()
+-          .SetText(params.title)
+-          .SetTextContext(views::style::CONTEXT_LABEL)
+-          .SetTextStyle(views::style::STYLE_BODY_3_MEDIUM)
+-          .SetElideBehavior(gfx::ELIDE_TAIL)
+-          .SetProperty(views::kMarginsKey,
+-                       gfx::Insets::TLBR(kTitleTopMargin,
+-                                         kIdentityContainerHorizontalPadding,
+-                                         title_bottom_margin,
+-                                         kIdentityContainerHorizontalPadding))
+-          .SetEnabledColor(kColorProfileMenuIdentityInfoTitle)
+-          .Build());
+   if (!has_any_subtitle) {
+     CHECK(!has_button);
+     return;
+   }
+ 
+-  // Subtitle.
+-
+   // Set the subtitle as the name of the parent container, so accessibility
+   // tools can read it together with the button text. The role change is
+   // required by Windows ATs.
+@@ -599,43 +620,19 @@ void ProfileMenuViewBase::SetProfileIdentityWithCallToAction(
+       !params.subtitle.empty() ? params.subtitle : params.email_subtitle,
+       ax::mojom::NameFrom::kAttribute);
+ 
+-  const bool has_subtitle = !params.subtitle.empty();
+-  if (!params.email_subtitle.empty()) {
+-    const int email_subtitle_bottom_margin =
+-        has_subtitle ? kSubtitleBottomMarginInfoBelow
+-                     : (has_button ? kSubtitleBottomMarginButtonBelow
+-                                   : kBottomMarginWhenNoButton);
+-    identity_info_container_->AddChildView(
+-        views::Builder<views::Label>()
+-            .SetText(params.email_subtitle)
+-            .SetTextContext(views::style::CONTEXT_LABEL)
+-            .SetTextStyle(views::style::STYLE_BODY_4)
+-            .SetHandlesTooltips(false)
+-            .SetProperty(
+-                views::kMarginsKey,
+-                gfx::Insets::TLBR(0, kIdentityContainerHorizontalPadding,
+-                                  email_subtitle_bottom_margin,
+-                                  kIdentityContainerHorizontalPadding))
+-            .SetEnabledColor(kColorProfileMenuIdentityInfoSubtitle)
+-            .Build());
+-  }
+-
+-  if (has_subtitle) {
+-    const int subtitle_bottom_margin = has_button
+-                                           ? kSubtitleBottomMarginButtonBelow
+-                                           : kBottomMarginWhenNoButton;
++  if (!params.subtitle.empty()) {
+     identity_info_container_->AddChildView(
+         views::Builder<views::Label>()
+             .SetText(params.subtitle)
+             .SetTextContext(views::style::CONTEXT_LABEL)
+-            .SetTextStyle(views::style::STYLE_BODY_4)
++            .SetTextStyle(views::style::STYLE_BODY_5)
+             .SetMultiLine(true)
++            .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+             .SetHandlesTooltips(false)
+-            .SetProperty(
+-                views::kMarginsKey,
+-                gfx::Insets::TLBR(0, kIdentityContainerHorizontalPadding,
+-                                  subtitle_bottom_margin,
+-                                  kIdentityContainerHorizontalPadding))
++            .SetProperty(views::kMarginsKey,
++                         gfx::Insets::TLBR(kSubtitleTopMargin,
++                                           kRowHorizontalPadding, 0,
++                                           kRowHorizontalPadding))
+             .SetEnabledColor(kColorProfileMenuIdentityInfoSubtitle)
+             .Build());
+   }
+@@ -644,7 +641,8 @@ void ProfileMenuViewBase::SetProfileIdentityWithCallToAction(
+     return;
+   }
+ 
+-  // Button.
++  // Button, stretched to the width of the list by the container's cross-axis
++  // alignment.
+   identity_button_ = identity_info_container_->AddChildView(
+       views::Builder<views::MdTextButton>()
+           .SetText(params.button_text)
+@@ -653,7 +651,9 @@ void ProfileMenuViewBase::SetProfileIdentityWithCallToAction(
+                                            std::move(params.button_action)))
+           .SetStyle(ui::ButtonStyle::kProminent)
+           .SetProperty(views::kMarginsKey,
+-                       gfx::Insets().set_bottom(kButtonBottomMargin))
++                       gfx::Insets::TLBR(kButtonTopMargin, kRowHorizontalPadding,
++                                         kButtonBottomMargin,
++                                         kRowHorizontalPadding))
+           .SetImageModel(views::Button::STATE_NORMAL, params.button_image)
+           .Build());
+ }
+@@ -684,29 +684,35 @@ void ProfileMenuViewBase::SetProfileManagementHeading(
+     const std::u16string& heading) {
+   profile_mgmt_heading_ = heading;
+ 
+-  // Add separator before heading.
++  // Sponari: `Reset()` moved the heading and the profile list to the top of
++  // the menu, so this separator — which upstream places immediately before the
++  // heading — now falls between the profile list and the feature rows. It is
++  // still created here because that is the only call that knows a profile
++  // list exists at all.
+   profile_mgmt_separator_container_->RemoveAllChildViews();
+   profile_mgmt_separator_container_->SetLayoutManager(
+       std::make_unique<views::FillLayout>());
+-  profile_mgmt_separator_container_->SetBorder(
+-      views::CreateEmptyBorder(gfx::Insets::VH(kDefaultMargin, 0)));
++  profile_mgmt_separator_container_->SetBorder(views::CreateEmptyBorder(
++      gfx::Insets::VH(kSeparatorVerticalMargin, 0)));
+   profile_mgmt_separator_container_->AddChildView(
+-      std::make_unique<views::Separator>());
++      views::Builder<views::Separator>()
++          .SetColorId(ui::kColorMenuSeparator)
++          .Build());
+ 
+   // Initialize heading layout.
+   profile_mgmt_heading_container_->RemoveAllChildViews();
+   profile_mgmt_heading_container_->SetLayoutManager(
+       std::make_unique<views::FillLayout>());
+-  profile_mgmt_heading_container_->SetBorder(
+-      views::CreateEmptyBorder(gfx::Insets::TLBR(
+-          kDefaultMargin, kMenuEdgeMargin + kMenuItemLeftInternalPadding,
+-          kDefaultMargin, kMenuEdgeMargin)));
++  profile_mgmt_heading_container_->SetBorder(views::CreateEmptyBorder(
++      gfx::Insets::TLBR(2, kRowHorizontalPadding, 6, kRowHorizontalPadding)));
+ 
+-  // Add heading.
++  // Sponari: a quiet section label in the platform-menu idiom — small, medium
++  // weight, secondary colour — rather than an emphasised body heading.
+   views::Label* label = profile_mgmt_heading_container_->AddChildView(
+       std::make_unique<views::Label>(heading, views::style::CONTEXT_LABEL,
+-                                     views::style::STYLE_BODY_3_EMPHASIS));
++                                     views::style::STYLE_BODY_5_MEDIUM));
+   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
++  label->SetEnabledColor(kColorProfileMenuIdentityInfoSubtitle);
+   label->SetHandlesTooltips(false);
+ }
+ 
+@@ -747,10 +753,12 @@ void ProfileMenuViewBase::AddProfileManagementFeaturesSeparator() {
+   profile_mgmt_features_separator_container_->RemoveAllChildViews();
+   profile_mgmt_features_separator_container_->SetLayoutManager(
+       std::make_unique<views::FillLayout>());
+-  profile_mgmt_features_separator_container_->SetBorder(
+-      views::CreateEmptyBorder(gfx::Insets::VH(kDefaultMargin, 0)));
++  profile_mgmt_features_separator_container_->SetBorder(views::CreateEmptyBorder(
++      gfx::Insets::VH(kSeparatorVerticalMargin, 0)));
+   profile_mgmt_features_separator_container_->AddChildView(
+-      std::make_unique<views::Separator>());
++      views::Builder<views::Separator>()
++          .SetColorId(ui::kColorMenuSeparator)
++          .Build());
+ }
+ 
+ void ProfileMenuViewBase::AddProfileManagementFeatureButton(
+@@ -767,13 +775,13 @@ void ProfileMenuViewBase::AddProfileManagementFeatureButton(
+ }
+ 
+ void ProfileMenuViewBase::AddBottomMargin() {
+-  // Create an empty container with a bottom margin.
++  // Sponari: the padding ring `Reset()` puts around the whole list already
++  // supplies the gap this used to add, so only the layout is initialized here.
++  // Keeping the (now misnamed) call site untouched keeps the hunk small.
+   if (!profile_mgmt_features_container_->GetLayoutManager()) {
+     profile_mgmt_features_container_->SetLayoutManager(
+         std::make_unique<views::BoxLayout>(
+             views::BoxLayout::Orientation::kVertical));
+-    profile_mgmt_features_container_->SetBorder(
+-        views::CreateEmptyBorder(gfx::Insets::TLBR(0, 0, kDefaultMargin, 0)));
+   }
+ }
+ 
+@@ -816,17 +824,19 @@ void ProfileMenuViewBase::Reset() {
+   auto components = std::make_unique<views::View>();
+   components->SetLayoutManager(std::make_unique<views::FlexLayout>())
+       ->SetOrientation(views::LayoutOrientation::kVertical);
+-
+-  // Create and add new component containers in the correct order.
+-  // First, add the parts of the current profile.
+-  identity_info_container_ =
+-      components->AddChildView(std::make_unique<views::View>());
+-  features_container_ =
+-      components->AddChildView(std::make_unique<views::View>());
+-  profile_mgmt_separator_container_ =
+-      components->AddChildView(std::make_unique<views::View>());
+-  // Second, add the profile management header. This includes the heading and
+-  // the shortcut feature(s) next to it.
++  // Sponari: one padding ring around the entire list. Rows paint their rounded
++  // highlight edge to edge, so this is what makes the highlight float inside
++  // the bubble's corners instead of colliding with them.
++  components->SetBorder(
++      views::CreateEmptyBorder(gfx::Insets(kMenuOuterPadding)));
++
++  // Sponari: the groups are reordered so the menu reads top-down as "which
++  // profile am I in, which others are there, what can I do here, what can I do
++  // to profiles" — profiles first, actions after. Upstream leads with the
++  // current profile's card and buries the profile list below the feature rows,
++  // which puts the menu's own subject in the middle of it.
++  //
++  // First, the section heading, then the current profile and its siblings.
+   auto profile_mgmt_header = std::make_unique<views::View>();
+   views::BoxLayout* profile_mgmt_header_layout =
+       profile_mgmt_header->SetLayoutManager(
+@@ -837,9 +847,16 @@ void ProfileMenuViewBase::Reset() {
+   profile_mgmt_header_layout->SetFlexForView(profile_mgmt_heading_container_,
+                                              1);
+   components->AddChildView(std::move(profile_mgmt_header));
+-  // Third, add the profile management buttons.
++  identity_info_container_ =
++      components->AddChildView(std::make_unique<views::View>());
+   selectable_profiles_container_ =
+       components->AddChildView(std::make_unique<views::View>());
++  // Second, the things you can do inside this profile.
++  profile_mgmt_separator_container_ =
++      components->AddChildView(std::make_unique<views::View>());
++  features_container_ =
++      components->AddChildView(std::make_unique<views::View>());
++  // Third, the things you can do to profiles as a set.
+   profile_mgmt_features_separator_container_ =
+       components->AddChildView(std::make_unique<views::View>());
+   profile_mgmt_features_container_ =

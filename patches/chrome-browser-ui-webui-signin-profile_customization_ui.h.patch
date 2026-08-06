@@ -1,0 +1,17 @@
+diff --git a/chrome/browser/ui/webui/signin/profile_customization_ui.h b/chrome/browser/ui/webui/signin/profile_customization_ui.h
+index 2256b8e0c0b1cc66d3801ccd152d40c1e98a3225..324a63b3c44b06eadab53b33ab7efd2c05283970 100644
+--- a/chrome/browser/ui/webui/signin/profile_customization_ui.h
++++ b/chrome/browser/ui/webui/signin/profile_customization_ui.h
+@@ -42,7 +42,11 @@ class ProfileCustomizationUI
+     : public ui::MojoWebUIController,
+       public theme_color_picker::mojom::ThemeColorPickerHandlerFactory {
+  public:
+-  static constexpr int kPreferredHeight = 570;
++  // Sponari: the redesigned dialog (see profile_customization_app.css) drops
++  // the illustration band and centres nothing, so it needs less height.
++  // `#selectAvatarWrapper` in that stylesheet is sized against this number —
++  // change one and the avatar grid either clips or floats.
++  static constexpr int kPreferredHeight = 540;
+   static constexpr int kPreferredWidth = 512;
+ 
+   explicit ProfileCustomizationUI(content::WebUI* web_ui);

@@ -128,6 +128,50 @@ Traps found the hard way. Each is also commented at its site; this is the index:
 - **`HorizontalTabStripRegionView::GetChildrenInZOrder()` is an allow-list.**
   A child missing from it trips a `DCHECK` in `GetTooltipHandlerForPoint`.
 
+## Profile UI: the dials, and the traps
+
+Two surfaces, two idioms. The avatar menu is Views C++
+(`profile_menu_view_base.cc`, dials in the `namespace {}` block at the top of
+that file); the profile-creation dialog is WebUI
+(`signin/profile_customization/profile_customization_app.css`, which is the
+only file that changed there — the template is untouched on purpose).
+
+The menu is a compact list, not a panel: no filled identity card, the current
+profile is a row with a trailing check, `kMenuWidth` is 288, and `Reset()`
+reorders the groups so profiles come before actions. The dialog is a
+left-aligned form, not a centred poster: no illustration band, labelled
+fields, actions in a footer.
+
+- **`Reset()`'s child order is the menu's information architecture.** The
+  containers are created empty there and filled later by unrelated `Build*`
+  calls, so moving a group is done in `Reset()` and nowhere else. The
+  consequence is that `SetProfileManagementHeading()` now creates the hairline
+  that lands *between* the profile list and the feature rows, not before the
+  heading. If an upgrade re-adds a group, place it deliberately.
+- **The heading is unconditional.** `ProfileMenuView::BuildMenu()` calls
+  `SetProfileManagementHeading()` even with one profile, because the label
+  covers the current profile too and because it carries that hairline.
+  Upstream guards the call with `!available_profiles.empty()`; restoring the
+  guard silently drops the separator.
+- **`profile_image_padding` is a fraction of `kIdentityInfoImageSize` (56).**
+  Guest and incognito pass `0.25 * 56 = 14` to inset their glyph. The row
+  avatar is 22, so the padding has to be rescaled or it swallows the image.
+- **Rows are highlighted by `OnPaintBackground`, not an ink drop.**
+  `MenuButtonRowView` turns the ink drop off and `HoverButton` takes focus on
+  hover, so `HasFocus()` is the hover state. The rounded pill only reads as
+  floating because `Reset()` puts a `kMenuOuterPadding` ring around the whole
+  scroll content — the row itself paints edge to edge.
+- **The dialog restyles `cr-input` from the outside.** `cr-input` ships the
+  outlined look as `:host(.stroked)`, which a parent stylesheet cannot set.
+  Setting the same `--cr-input-*` properties on `#nameInput` gets there, and
+  the focus and error states work only because `cr-input` reflects `focused_`
+  and `invalid` onto its own element. If either stops being reflected, the
+  field freezes in its resting state.
+- **`ProfileCustomizationUI::kPreferredHeight` and `#selectAvatarWrapper`'s
+  height move together.** The avatar grid is a fixed height sized against the
+  dialog minus its header and footer. Change the dialog height alone and the
+  grid either scrolls under the buttons or floats above them.
+
 ## Where to look things up
 
 - Chromium code search: https://source.chromium.org/chromium

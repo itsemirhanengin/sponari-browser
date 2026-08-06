@@ -6,10 +6,12 @@ been done; design taste ("darken the shadow", "more corner radius") does not
 belong in the repo, it changes every session. Invariants that a rebase can break
 silently live in AGENTS.md instead.
 
-Current state: 31 patches. Rebranded, Settings WebUI at `chrome://sponari-settings`
-(Cmd+, points at it), and a reworked top chrome — Glass Frame on by default,
+Current state: 36 patches. Rebranded, Settings WebUI at `chrome://sponari-settings`
+(Cmd+, points at it), a reworked top chrome — Glass Frame on by default,
 grayscale theme, ~70dip header, pill-less omnibox, avatar in the tab strip,
-one drop shadow around the tab+toolbar silhouette. UA still reports Chrome.
+one drop shadow around the tab+toolbar silhouette — and a reworked profile UI:
+the avatar menu is a compact list, the profile-creation dialog a left-aligned
+form. UA still reports Chrome.
 
 ## Next up
 

@@ -1,5 +1,5 @@
 diff --git a/chrome/app/chromium_strings.grd b/chrome/app/chromium_strings.grd
-index 12a62d68036688d1813ba5ef265ebd0bd4e1c6cf..833f2601a6c79606b50c21612f2b35c0609c33d5 100644
+index 12a62d68036688d1813ba5ef265ebd0bd4e1c6cf..dba76d8d2da6c04d752fef9e0ec55cbc334911c1 100644
 --- a/chrome/app/chromium_strings.grd
 +++ b/chrome/app/chromium_strings.grd
 @@ -294,10 +294,10 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
@@ -1307,7 +1307,7 @@ index 12a62d68036688d1813ba5ef265ebd0bd4e1c6cf..833f2601a6c79606b50c21612f2b35c0
          </message>
          <message name="IDS_PROFILE_MENU_PROFILES_LIST_TITLE" desc="Title in the profile menu for the list of 'other Chromium profiles'.">
 -          Other Chromium profiles
-+          Other Sponari profiles
++          Profiles
          </message>
          <message name="IDS_PROFILE_MENU_MANAGE_PROFILES" desc="The text label of the Manage Chromium Profiles item in the Profile Menu.">
 -          Manage Chromium profiles
@@ -1330,7 +1330,7 @@ index 12a62d68036688d1813ba5ef265ebd0bd4e1c6cf..833f2601a6c79606b50c21612f2b35c0
          </message>
          <message name="IDS_PROFILE_MENU_PROFILES_LIST_TITLE" desc="Title in the profile menu for the list of 'other Chromium profiles'.">
 -          Other Chromium Profiles
-+          Other Sponari Profiles
++          Profiles
          </message>
          <message name="IDS_PROFILE_MENU_MANAGE_PROFILES" desc="The text label of the Manage Chromium Profiles item in the Profile Menu.">
 -          Manage Chromium Profiles

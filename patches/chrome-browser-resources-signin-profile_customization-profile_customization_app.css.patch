@@ -1,0 +1,443 @@
+diff --git a/chrome/browser/resources/signin/profile_customization/profile_customization_app.css b/chrome/browser/resources/signin/profile_customization/profile_customization_app.css
+index 014c88d1abd3c98e0120a607bf180dc8f3502df5..95fcfb73f09f1eec3296949b511d60fc5ff1bc47 100644
+--- a/chrome/browser/resources/signin/profile_customization/profile_customization_app.css
++++ b/chrome/browser/resources/signin/profile_customization/profile_customization_app.css
+@@ -11,6 +11,23 @@
+  * #include=signin-shared
+  * #css_wrapper_metadata_end */
+ 
++/* Sponari: upstream builds this dialog around a centred illustration band —
++ * a decorative header strip, the avatar floating on top of it, and every
++ * label and field centred in a 148/320dip column. It reads as an onboarding
++ * poster. The Sponari version is a form: one left-aligned column, a labelled
++ * field per row, and the actions in a footer. Same elements, same DOM — only
++ * the CSS changes, which keeps this a single-file patch.
++ *
++ * The scale below is the same one Sponari Settings uses (12/10dip radii,
++ * --color-sys-* tokens, hairline dividers), so the two surfaces look like
++ * they were drawn by the same hand. */
++
++:host {
++  --sponari-dialog-padding: 28px;
++  --sponari-control-radius: 10px;
++  --sponari-field-gap: 20px;
++}
++
+ #viewManager,
+ #customizeDialog,
+ #selectAvatarDialog {
+@@ -18,282 +35,229 @@
+ }
+ 
+ .profile-customization-wrapper {
++  box-sizing: border-box;
+   display: flex;
+   flex-direction: column;
+   height: 100%;
++  padding: var(--sponari-dialog-padding) var(--sponari-dialog-padding) 0;
+ }
+ 
++/* Header: avatar only. The illustration and its fixed 124/170dip band are
++ * gone; the avatar now sits in the flow at the start of the column. */
+ #header {
+-  background-color: var(--header-background-color);
+-  height: 124px;
+-  margin-bottom: 16px;
+-}
+-
+-.in-dialog-design #header {
+-  background: center 18px no-repeat
+-      url(./images/profile_customization_illustration.svg);
+-  height: 170px;
+-}
+-
+-:host([is-refreshed-ui_]) .in-dialog-design #header {
+-  background: center 18px no-repeat;
+-  height: 124px;
++  background: none;
++  height: auto;
++  margin: 0 0 18px;
+ }
+ 
+ #avatarContainer {
+-  --avatar-border: 2px;
+-  --avatar-size: 60px;
++  --avatar-size: 72px;
+   height: var(--avatar-size);
+-  left: calc(50% - var(--avatar-size)/2);
+-  position: absolute;
+-  top: 30px;
++  position: relative;
+   width: var(--avatar-size);
+ }
+ 
+-.in-dialog-design #avatarContainer {
+-  --avatar-size: 76px;
+-  top: 91px;
+-}
+-
+-:host([is-refreshed-ui_]) .in-dialog-design #avatarContainer {
+-  --avatar-size: 88px;
+-  border-radius: 50%;
+-  top: 48px;
+-}
+-
+ #avatar {
+-  /** The user avatar may be transparent, add a background */
+-  background-color: var(--md-background-color);
+-  border: var(--avatar-border) solid var(--md-background-color);
++  background-color: var(--color-sys-base-container);
++  border: none;
+   border-radius: 50%;
++  box-sizing: border-box;
+   height: 100%;
+-  left: calc(-1 * var(--avatar-border));
+-  position: absolute;
+-  top: calc(-1 * var(--avatar-border));
+   width: 100%;
+ }
+ 
++/* The badge — either the "managed" domain mark or the avatar-edit button —
++ * overlaps the bottom-trailing corner of the avatar and carries a ring in the
++ * dialog's own background colour so it never merges into the photo. */
+ .avatar-badge {
+-  --badge-icon-size: 15px;
+-  --badge-offset: -4px;
+-  --badge-width: 20px;
+-  background-color: var(--signin-work-badge-background-color);
+-  border: 2px solid var(--header-background-color);
++  --badge-icon-size: 14px;
++  --badge-width: 26px;
++  align-items: center;
++  background-color: var(--color-sys-base-container);
++  border: 1px solid var(--color-sys-divider);
+   border-radius: 50%;
+-  bottom: var(--badge-offset);
++  bottom: -2px;
++  box-sizing: border-box;
++  display: flex;
+   height: var(--badge-width);
+-  inset-inline-end: var(--badge-offset);
++  inset-inline-end: -2px;
++  justify-content: center;
+   position: absolute;
+   width: var(--badge-width);
+ }
+ 
+-.in-dialog-design .avatar-badge {
+-  --badge-icon-size: 16px;
+-  --badge-width: 26px;
+-  border: 1px solid var(--google-grey-300);
+-  bottom: 0;
+-}
+-
+ .avatar-badge > cr-icon {
+-  bottom: 0;
+-  color: var(--signin-work-badge-foreground-color);
++  color: var(--color-sys-on-surface-subtle);
+   height: var(--badge-icon-size);
+-  left: 0;
+-  margin: auto;
+-  position: absolute;
+-  right: 0;
+-  top: 0;
+   width: var(--badge-icon-size);
+ }
+ 
+ .avatar-badge > cr-icon-button {
+   --cr-icon-button-icon-size: var(--badge-icon-size);
+   --cr-icon-button-size: var(--badge-width);
+-  margin: auto;
++  --cr-icon-button-margin-end: 0;
++  --cr-icon-button-margin-start: 0;
++  margin: 0;
+ }
+ 
++/* Title. Left-aligned and sized like a section heading rather than a poster
++ * headline, so it belongs to the form under it. */
+ #body {
+-  color: var(--cr-secondary-text-color);
+-  font-size: 13px;
+-  line-height: 20px;
+-  margin: 0 16px;
+-  text-align: center;
++  margin: 0;
++  text-align: start;
+ }
+ 
+ #title {
+-  color: var(--cr-primary-text-color);
+-  font-size: 15px;
+-  font-weight: 500;
+-  line-height: 22px;
+-  margin: 0 0 8px;
++  color: var(--color-sys-on-surface);
++  font-size: 20px;
++  font-weight: 600;
++  letter-spacing: -.2px;
++  line-height: 26px;
++  margin: 0 0 var(--sponari-field-gap);
+   overflow: hidden;
+   text-overflow: ellipsis;
+ }
+ 
+-:host([is-refreshed-ui_]) #title {
+-  margin: 24px 0 24px;
+-}
+-
+-#inputTitle {
++/* Field labels. */
++#inputTitle,
++#themePickerTitle {
+   color: var(--color-sys-on-surface-subtle);
+-  flex-grow: 1;
+-  font-size: 11px;
++  font-size: 12px;
+   font-weight: 500;
+   line-height: 16px;
+-  margin: 0 auto 0 auto;
+-  width: 148px;
++  margin: 0 0 8px;
++  width: auto;
+ }
+ 
+-:host([is-refreshed-ui_]) #inputTitle {
+-  padding-bottom: 10px;
++#themePickerTitle {
++  padding-top: var(--sponari-field-gap);
+ }
+ 
++/* Text field. `cr-input` ships a `.stroked` look — transparent fill, a real
++ * border, no Material underline — but only as a host class, which we cannot
++ * set without editing the template. Setting the same custom properties from
++ * here gets the identical result and keeps the patch to this file. The
++ * focus and error states are reachable because `cr-input` reflects
++ * `focused_` and `invalid` onto its own element. */
+ #nameInput {
+-  --cr-form-field-label-font-size: 11px;
+-  --cr-input-placeholder-color: rgba(var(--google-grey-900-rgb), .5);
+-  --cr-input-padding-bottom: 8px;
+-  --cr-input-padding-top: 8px;
+-  flex-grow: 1;
+-  height: 32px;
+-  margin: 16px auto;
+-  width: 148px;
++  --cr-input-background-color: transparent;
++  --cr-input-border: 1px solid var(--color-sys-divider);
++  --cr-input-border-bottom: none;
++  --cr-input-border-radius: var(--sponari-control-radius);
++  --cr-input-min-height: 40px;
++  --cr-input-padding-bottom: 10px;
++  --cr-input-padding-end: 12px;
++  --cr-input-padding-start: 12px;
++  --cr-input-padding-top: 10px;
++  --cr-input-underline-display: none;
++  display: block;
++  flex-grow: 0;
++  height: auto;
++  margin: 0;
++  width: auto;
+ }
+ 
+-#inputTitle:not([hidden]) + #nameInput {
+-  margin-top: 0;
++#nameInput[focused_] {
++  --cr-input-border: 2px solid var(--color-sys-state-focus-ring);
++  --cr-input-padding-bottom: 9px;
++  --cr-input-padding-end: 11px;
++  --cr-input-padding-start: 11px;
++  --cr-input-padding-top: 9px;
+ }
+ 
+-#themePickerTitle {
+-  color: var(--color-sys-on-surface-subtle);
+-  font-size: 11px;
+-  font-weight: 500;
+-  line-height: 16px;
+-  margin: 0 auto 12px auto;
+-  padding-top: 8px;
+-  width: 148px;
++#nameInput[invalid] {
++  --cr-input-border: 1px solid var(--cr-input-error-color);
+ }
+ 
+-#pickThemeContainer {
+-  flex-grow: 1;
+-  margin: 16px auto;
++#nameInput[invalid][focused_] {
++  --cr-input-border: 2px solid var(--cr-input-error-color);
+ }
+ 
+-.in-dialog-design #pickThemeContainer {
+-  margin: 4px auto 26px auto;
++#policyIcon {
++  height: 16px;
++  width: 16px;
++}
++
++/* Theme swatches. Left-aligned with the field above; the grid keeps
++ * upstream's six columns. */
++#pickThemeContainer {
++  flex-grow: 0;
++  margin: 0;
+ }
+ 
+ cr-theme-color-picker {
+   --cr-theme-color-padding: 6px;
+   --cr-theme-color-picker-column-width: 50px;
+-  --cr-theme-color-picker-grid-gap: 7px;
++  --cr-theme-color-picker-grid-gap: 6px;
+   --cr-theme-color-picker-grid-padding: 0;
+ }
+ 
+-.action-container {
+-  padding: 0 16px 16px;
++/* Footer. `margin-top: auto` pins it to the bottom of the dialog, which is
++ * what lets the content above keep its natural height instead of being
++ * stretched by a flex-grow spacer. `signin_shared.css` already reverses the
++ * row on macOS, so the primary action lands trailing. */
++.in-dialog-design .action-container {
++  column-gap: 8px;
++  margin-top: auto;
++  padding: 20px 0 var(--sponari-dialog-padding);
+ }
+ 
++/* A softly rounded rectangle rather than `cr-button`'s 100px pill — the same
++ * radius as the text field, so the controls read as one family. */
+ cr-button {
+-  font-size: 12px;
+-  min-width: 111px;
+-}
+-
+-.in-dialog-design #title {
+-  font-size: 20px;
+-  line-height: 24px;
+-}
+-
+-.in-dialog-design #themePickerTitle {
+-  width: 320px;
+-}
+-
+-.in-dialog-design #inputTitle {
+-  width: 320px;
+-}
+-
+-.in-dialog-design #nameInput {
+-  width: 320px;
+-}
+-
+-.in-dialog-design .action-container {
+-  column-gap: 12px;
+-  padding: 0 24px 24px;
++  --cr-button-height: 34px;
++  border-radius: var(--sponari-control-radius);
++  font-size: 13px;
++  min-width: 84px;
+ }
+ 
+-.in-dialog-design #doneButton {
+-  min-width: 119px;
++/* Avatar picker view. */
++.select-avatar-header {
++  align-items: center;
++  display: flex;
++  height: auto;
++  padding: 20px var(--sponari-dialog-padding) 12px;
+ }
+ 
+-:host([is-refreshed-ui_]) .in-dialog-design #doneButton {
+-  min-width: 65px;
++.select-avatar-title {
++  font-size: 16px;
++  font-weight: 600;
++  margin: 0;
+ }
+ 
+-.in-dialog-design #skipButton {
+-  min-width: 76px;
++#selectAvatarBackButton {
++  --cr-icon-button-icon-size: 16px;
++  --cr-icon-button-size: 28px;
++  margin-inline-end: 8px;
++  margin-inline-start: -6px;
+ }
+ 
+ #selectAvatarWrapper {
+-  height: 428px;
+-  margin: 0 14px;
++  /* Sponari: dialog height (`ProfileCustomizationUI::kPreferredHeight`) minus
++     this view's header and footer. The three move together — shrink the
++     dialog and this has to follow, or the grid scrolls under the buttons. */
++  height: 396px;
++  margin: 0 var(--sponari-dialog-padding);
+   overflow-x: hidden;
+   overflow-y: auto;
+ }
+ 
+ cr-profile-avatar-selector {
+-  --avatar-size: 72px;
+-  --avatar-spacing: 18px;
++  --avatar-size: 64px;
++  --avatar-spacing: 16px;
+   height: fit-content;
+-  padding-bottom: 12px;
+-  padding-inline-start: 16px;
+-  padding-top: 12px;
+-}
+-
+-#policyIcon {
+-  height: 15px;
+-  position: absolute;
+-  right: 5%;
+-  width: 15px;
+-}
+-
+-.select-avatar-header {
+-  display: flex;
+-  height: 22px;
+-  justify-content: flex-start;
+-  padding: 13px 16px 17px;
+-}
+-
+-.select-avatar-title {
+-  font-size: 15px;
+-  line-height: 22px;
+-  margin: auto 0;
+-}
+-
+-#selectAvatarBackButton {
+-  --cr-icon-button-icon-size: 16px;
+-  --cr-icon-button-size: 22px;
+-  margin-inline-end: 20px;
+-  margin-inline-start: 2px;
++  padding-bottom: 8px;
++  padding-top: 4px;
+ }
+ 
+ #selectAvatarDialog .action-container {
+-  padding: 22px 24px;
+-}
+-
+-#selectAvatarConfirmButton {
+-  min-width: 119px;
++  border-top: 1px solid var(--color-sys-divider);
++  margin: 12px 0 0;
++  padding: 16px var(--sponari-dialog-padding);
+ }
+ 
+ @media (prefers-color-scheme: dark) {
+-  .in-dialog-design .avatar-badge {
+-    border: 1px solid var(--google-grey-500);
+-  }
+-
+-  :host(:not([is-refreshed-ui_])) .in-dialog-design #header {
+-    background-image:
+-        url(./images/profile_customization_illustration_dark.svg);
+-  }
+-
+-  #nameInput {
+-    --cr-input-placeholder-color: rgba(var(--google-grey-200-rgb), .5);
++  .avatar-badge {
++    box-shadow: none;
+   }
+ }
